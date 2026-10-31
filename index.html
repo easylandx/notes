@@ -359,9 +359,9 @@ let dip=null;const bin=$('#bin'),ip=$('#ip'),standalone=()=>matchMedia('(display
  IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=='MacIntel'&&navigator.maxTouchPoints>1);
 if(!standalone())bin.style.display='';
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;if(!standalone())bin.style.display=''});
-addEventListener('appinstalled',()=>{dip=null;bin.style.display='none';ip.classList.remove('show');toast('Installed! Open Notebook from your home screen')});
+addEventListener('appinstalled',()=>{dip=null;bin.style.display='none';ip.classList.remove('show');toast('Installed! Open Notebook from your apps')});
 bin.onclick=async()=>{if(dip){ip.classList.remove('show');try{dip.prompt();await dip.userChoice}catch(e){}dip=null;return}
- ip.innerHTML=IOS?'To install: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.':'To install: open your browser menu (⋮ or ⋯) and choose <b>Install app</b> or <b>Add to Home screen</b>.';ip.classList.toggle('show')};
+ const MOB=IOS||/Android/i.test(navigator.userAgent);ip.innerHTML=IOS?'To install: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.':MOB?'To install: open your browser menu (⋮ or ⋯) and choose <b>Install app</b> or <b>Add to Home screen</b>.':'To install: click the <b>install icon</b> at the right of the address bar (or browser menu → <b>Install Notebook</b>).';ip.classList.toggle('show')};
 document.addEventListener('click',e=>{if(!e.target.closest('#ip,#bin'))ip.classList.remove('show')});
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 showPn();
