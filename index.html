@@ -84,6 +84,9 @@ html,body{background:#d2b843}
 .ph .x{position:absolute;right:-9px;top:-9px;width:26px;height:26px;border-radius:50%;border:0;background:#3b2f27;color:#fff;font:15px/26px sans-serif;padding:0;z-index:2}
 .ph .rz{position:absolute;right:-8px;bottom:-8px;width:24px;height:24px;border-radius:50%;background:#3b2f27;border:2px solid #fff;z-index:2;touch-action:none}
 @media(max-width:600px) and (orientation:portrait){.bar button{padding:4px 3px}}
+.top{-webkit-user-select:none;user-select:none}
+.top .epx{margin-left:auto;margin-right:12px;padding:3px 11px;border:1px solid rgba(74,58,18,.45);border-radius:12px;background:rgba(74,58,18,.1);color:#4a3a12;text-decoration:none;font-size:11px;letter-spacing:.04em;text-transform:none}
+.top .epx:active{background:rgba(74,58,18,.25)}
 </style>
 </head>
 <body>
@@ -92,7 +95,7 @@ html,body{background:#d2b843}
   <div class="inside">
    <div class="pad" id="pad">
     <div class="paper" id="paper">
-     <div class="top"><span>Notebook</span><span style="margin-left:auto">1</span></div>
+     <div class="top"><span>Notebook</span><a class="epx" href="https://easylandx.github.io/" target="_blank" rel="noopener">EasyLandX</a><span>1</span></div>
      <textarea id="ta" spellcheck="false" placeholder="Start writing, or tap Voice and speak…"></textarea>
      <div id="ph"></div>
      <canvas id="sk"></canvas>
@@ -234,8 +237,21 @@ function tearPage(){if(busy)return;busy=true;save();const l=leaf(pages[idx],pad.
 let t0=null;
 pad.addEventListener('touchstart',e=>{if(mode!='write'||e.touches.length!=1){t0=null;return}const t=e.touches[0];t0={x:t.clientX,y:t.clientY,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2}},{passive:true});
 pad.addEventListener('touchend',e=>{if(!t0||!book.classList.contains('open'))return;const t=e.changedTouches[0],dx=t.clientX-t0.x,dy=t.clientY-t0.y,a=t0;t0=null;
- if(dx>90&&Math.abs(dy)<dx*.5)tearPage();
- else if(Math.abs(dy)>70&&Math.abs(dx)<Math.abs(dy)*.6){if(dy<0&&a.bot)go(1);else if(dy>0&&a.top)go(-1)}},{passive:true});
+ gesture(dx,dy,a)},{passive:true});
+function gesture(dx,dy,a){if(dx>90&&Math.abs(dy)<dx*.5)tearPage();
+ else if(Math.abs(dy)>70&&Math.abs(dx)<Math.abs(dy)*.6){if(dy<0&&a.bot)go(1);else if(dy>0&&a.top)go(-1)}}
+/* mouse: same swipes by dragging (drag that selects text is left alone, unless it starts on the header or red margin) */
+let m0=null;
+pad.addEventListener('mousedown',e=>{if(e.button||mode!='write'||!book.classList.contains('open')||e.target.closest('.ph,a')){m0=null;return}const r=paper.getBoundingClientRect();
+ m0={x:e.clientX,y:e.clientY,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2,force:!!e.target.closest('.top')||e.clientX-r.left<56}});
+addEventListener('mouseup',e=>{if(!m0)return;const a=m0,dx=e.clientX-a.x,dy=e.clientY-a.y;m0=null;if(Math.abs(dx)<20&&Math.abs(dy)<20)return;
+ if(!a.force&&ta.selectionStart!=ta.selectionEnd)return;if(a.force)ta.setSelectionRange(ta.selectionEnd,ta.selectionEnd);gesture(dx,dy,a)});
+/* mouse wheel / trackpad: keep scrolling past the top or bottom edge to turn the page */
+let wb={t:0,top:0,bot:0,sum:0};
+pad.addEventListener('wheel',e=>{if(mode!='write'||!book.classList.contains('open'))return;const n=performance.now();
+ if(n-wb.t>300)wb={t:n,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2,sum:0};wb.t=n;
+ if((e.deltaY>0&&wb.bot)||(e.deltaY<0&&wb.top))wb.sum+=e.deltaY;
+ if(Math.abs(wb.sum)>160){const d=wb.sum>0?1:-1;wb.sum=0;wb.top=wb.bot=0;go(d)}},{passive:true});
 let ec=0;$('#ber').onclick=()=>{const b=$('#ber');if(!ec){b.innerHTML='<i>❓</i>Sure?';ec=setTimeout(()=>{ec=0;b.innerHTML='<i>🗑</i>Erase'},3000);return}clearTimeout(ec);ec=0;b.innerHTML='<i>🗑</i>Erase';pages=[{t:'',s:[]}];load(0);toast('Notebook erased')};
 /* photos */
 const ph=$('#ph'),fph=$('#fph');
