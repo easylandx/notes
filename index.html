@@ -24,8 +24,8 @@ body{overflow:hidden;overscroll-behavior:none;background:radial-gradient(ellipse
 .paper{position:relative;isolation:isolate;min-height:100%;background:#f7e98e linear-gradient(transparent 0 27px,rgba(52,88,160,.38) 27px 28px,transparent 28px 32px) 0 64px/100% 32px repeat-y;box-shadow:inset 0 0 60px rgba(176,140,30,.28)}
 .paper::before{content:"";position:absolute;left:44px;top:0;bottom:0;width:2px;background:rgba(200,60,60,.45);box-shadow:3px 0 0 rgba(200,60,60,.18);z-index:1;pointer-events:none}
 .top{height:64px;background:linear-gradient(#e6d36a,#f4e486);border-bottom:2px solid rgba(200,60,60,.5);display:flex;align-items:flex-end;padding:0 18px 8px 58px;font-size:12px;color:rgba(70,50,10,.6);letter-spacing:.14em;text-transform:uppercase;position:relative;z-index:2}
-textarea{display:block;width:100%;border:0;outline:0;background:transparent;resize:none;overflow:hidden;font:500 26px/32px 'Caveat',cursive;color:#1d2a5c;padding:0 18px 0 58px;min-height:0;caret-color:#b3261e}
-textarea::placeholder{color:rgba(29,42,92,.4)}
+textarea{display:block;width:100%;border:0;outline:0;background:transparent;resize:none;overflow:hidden;font:500 26px/32px 'Caveat',cursive;color:#1f4fd8;padding:0 18px 0 58px;min-height:0;caret-color:#b3261e}
+textarea::placeholder{color:rgba(31,79,216,.4)}
 #sk{position:absolute;left:0;top:64px;display:block;width:100%;height:1400px;background:transparent;z-index:3;pointer-events:none}
 .sketching #sk{pointer-events:auto;touch-action:none;cursor:crosshair}
 .sketching textarea{pointer-events:none}
@@ -149,7 +149,7 @@ cover.addEventListener('touchstart',e=>{c0=e.touches.length==1?{x:e.touches[0].c
 cover.addEventListener('touchend',e=>{if(!c0)return;const t=e.changedTouches[0],dx=t.clientX-c0.x,dy=t.clientY-c0.y;c0=null;if(dy<-60&&Math.abs(dx)<Math.abs(dy)*.6)openBook()},{passive:true});
 /* sizing, ink */
 const dpr=()=>Math.min(devicePixelRatio||1,2);
-function setup(){const d=dpr();ctx.setTransform(d,0,0,d,0,0);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#1d2a5c'}
+function setup(){const d=dpr();ctx.setTransform(d,0,0,d,0,0);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#1f4fd8'}
 function seg(a,b){ctx.beginPath();ctx.lineWidth=b[3];ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
 function redraw(){setup();ctx.clearRect(0,0,9999,9999);strokes.forEach(s=>s.forEach((p,i)=>i&&seg(s[i-1],p)))}
 function fit(){ta.style.height='auto';const header=paper.querySelector('.top').offsetHeight;const h=Math.max(ta.scrollHeight,pad.clientHeight-header);ta.style.height=h+'px';
@@ -238,7 +238,7 @@ const mkBlob=async()=>{try{await document.fonts.load("26px Caveat")}catch(e){}
  const H=Math.max(420,64+lines.length*32+48,64+sy)+34,S=2,c=document.createElement('canvas');c.width=W*S;c.height=H*S;const x=c.getContext('2d');x.scale(S,S);
  x.fillStyle='#f7e98e';x.fillRect(0,0,W,H);x.fillStyle='#ecd978';x.fillRect(0,0,W,64);x.fillStyle='rgba(200,60,60,.5)';x.fillRect(0,62,W,2);x.fillRect(44,0,2,H);
  x.fillStyle='rgba(52,88,160,.38)';for(let y=64+27;y<H;y+=32)x.fillRect(0,y,W,1);
- x.font="500 26px Caveat, cursive";x.fillStyle='#1d2a5c';lines.forEach((l,i)=>x.fillText(l,58,64+24+i*32));
+ x.font="500 26px Caveat, cursive";x.fillStyle='#1f4fd8';lines.forEach((l,i)=>x.fillText(l,58,64+24+i*32));
  for(const m of ims)await new Promise(r=>{const i=new Image();i.onload=()=>{x.save();x.translate(m.x+m.w/2,m.y+m.w*m.a/2);x.rotate(m.r*Math.PI/180);x.fillStyle='#fff';x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=6;x.fillRect(-m.w/2,-m.w*m.a/2,m.w,m.w*m.a);x.shadowColor='transparent';const bw=5,iw=m.w-2*bw,ih=m.w*m.a-2*bw,q=Math.max(iw/i.width,ih/i.height);x.beginPath();x.rect(-iw/2,-ih/2,iw,ih);x.clip();x.drawImage(i,-i.width*q/2,-i.height*q/2,i.width*q,i.height*q);x.restore();r()};i.onerror=r;i.src=m.d});
  x.drawImage(cv,0,64,cv.width/dpr(),cv.height/dpr());
  x.font="11px 'Special Elite',monospace";x.fillStyle='rgba(70,50,10,.65)';x.textAlign='center';x.fillText('Created with NotesApp · easylandx.github.io/notes/',W/2,H-12);
@@ -258,10 +258,10 @@ $('#bsh').onclick=async()=>{
 let busy=false;
 function showPn(){paper.querySelector('.top span:last-child').textContent=(idx+1)+' / '+pages.length}
 function load(i){hist=[];histTextOnly=false;idx=i;ta.value=pages[i].t;strokes=pages[i].s;ims=pages[i].im=pages[i].im||[];pad.scrollTop=0;fit();redraw();renderPhotos();showPn();hideSug();save()}
-function snapUrl(sk,w,h){const c=document.createElement('canvas'),d=dpr();c.width=w*d;c.height=h*d;const x=c.getContext('2d');x.scale(d,d);x.lineCap=x.lineJoin='round';x.strokeStyle='#1d2a5c';sk.forEach(st=>st.forEach((p,i)=>{if(i){x.beginPath();x.lineWidth=p[3];x.moveTo(st[i-1][0],st[i-1][1]);x.lineTo(p[0],p[1]);x.stroke()}}));return c.toDataURL()}
+function snapUrl(sk,w,h){const c=document.createElement('canvas'),d=dpr();c.width=w*d;c.height=h*d;const x=c.getContext('2d');x.scale(d,d);x.lineCap=x.lineJoin='round';x.strokeStyle='#1f4fd8';sk.forEach(st=>st.forEach((p,i)=>{if(i){x.beginPath();x.lineWidth=p[3];x.moveTo(st[i-1][0],st[i-1][1]);x.lineTo(p[0],p[1]);x.stroke()}}));return c.toDataURL()}
 function leaf(pg,st,n){const l=document.createElement('div');l.className='paper lf';l.style.cssText='left:'+pad.offsetLeft+'px;top:'+pad.offsetTop+'px;width:'+pad.clientWidth+'px;height:'+pad.clientHeight+'px;border-radius:3px 8px 0 0;background-position:0 '+(64-st)+'px';
  const tp=paper.querySelector('.top').cloneNode(true);tp.querySelector('span:last-child').textContent=(n+1)+' / '+pages.length;
- const t=document.createElement('div');t.textContent=pg.t;t.style.cssText="padding:0 18px 0 58px;font:500 26px/32px Caveat,cursive;color:#1d2a5c;white-space:pre-wrap;overflow-wrap:anywhere";
+ const t=document.createElement('div');t.textContent=pg.t;t.style.cssText="padding:0 18px 0 58px;font:500 26px/32px Caveat,cursive;color:#1f4fd8;white-space:pre-wrap;overflow-wrap:anywhere";
  const im=new Image(),W=paper.clientWidth,H=ta.offsetHeight;im.src=snapUrl(pg.s,W,H);im.style.cssText='position:absolute;left:0;top:64px;width:'+W+'px;height:'+H+'px';
  const pho=(pg.im||[]).map(m=>{const i=new Image();i.src=m.d;i.style.cssText='position:absolute;object-fit:cover;box-sizing:border-box;border:5px solid #fff;box-shadow:0 3px 6px rgba(0,0,0,.35);left:'+m.x+'px;top:'+m.y+'px;width:'+m.w+'px;height:'+m.w*m.a+'px;transform:rotate('+m.r+'deg)';return i});
  const w=document.createElement('div');w.className='in';w.style.transform='translateY('+(-st)+'px)';w.append(tp,t,...pho,im);l.append(w);$('.inside').appendChild(l);return l}
