@@ -77,6 +77,13 @@ html,body{background:#d2b843}
 #lp.show{display:flex}
 #lp button{border:0;border-radius:12px;padding:10px 18px;background:#f3e38a;color:#3b2f27;font:15px 'Special Elite',monospace;display:flex;flex-direction:column;align-items:center;gap:2px}
 #lp b{font-size:20px}#lp small{font-size:11px}
+#ph{position:absolute;inset:0;z-index:2;pointer-events:none}
+.ph{position:absolute;pointer-events:auto;touch-action:none;cursor:grab;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
+.ph img{display:block;width:100%;height:100%;object-fit:cover;border:5px solid #fff;border-radius:2px;-webkit-user-drag:none;user-select:none;pointer-events:none}
+.ph::before{content:"";position:absolute;left:50%;top:-9px;width:54px;height:18px;margin-left:-27px;background:rgba(240,235,200,.78);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.2);z-index:1}
+.ph .x{position:absolute;right:-9px;top:-9px;width:26px;height:26px;border-radius:50%;border:0;background:#3b2f27;color:#fff;font:15px/26px sans-serif;padding:0;z-index:2}
+.ph .rz{position:absolute;right:-8px;bottom:-8px;width:24px;height:24px;border-radius:50%;background:#3b2f27;border:2px solid #fff;z-index:2;touch-action:none}
+@media(max-width:600px) and (orientation:portrait){.bar button{padding:4px 3px}}
 </style>
 </head>
 <body>
@@ -87,6 +94,7 @@ html,body{background:#d2b843}
     <div class="paper" id="paper">
      <div class="top"><span>Notebook</span><span style="margin-left:auto">1</span></div>
      <textarea id="ta" spellcheck="false" placeholder="Start writing, or tap Voice and speak…"></textarea>
+     <div id="ph"></div>
      <canvas id="sk"></canvas>
     </div>
    </div>
@@ -94,6 +102,7 @@ html,body{background:#d2b843}
    <div class="bar">
     <button id="bmode"><i>✎</i>Write</button>
     <button id="bmic"><i>🎙</i>Voice</button>
+    <button id="bph"><i>📷</i>Photo</button>
     <button id="ber"><i>🗑</i>Erase</button>
     <button id="bsh"><i>📤</i>WhatsApp</button>
     <button id="bfs" style="display:none"><i>⛶</i>Full</button>
@@ -104,14 +113,15 @@ html,body{background:#d2b843}
   <div class="cover" id="cover"><div class="band" id="band"></div><b>NOTES</b></div>
  </div>
 </div>
+<input type="file" id="fph" accept="image/*" hidden>
 <div id="toast"></div>
 <script>
 const $=s=>document.querySelector(s);
 const book=$('#book'),cover=$('#cover'),ta=$('#ta'),cv=$('#sk'),ctx=cv.getContext('2d'),pad=$('#pad'),paper=$('#paper'),sug=$('#sug');
 let strokes=[],mode='write',cur=null,last=null,cw=0,chh=0;
 function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.opacity=0,2600)}
-function save(){try{pages[idx]={t:ta.value,s:strokes};localStorage.setItem('moleskine:v2',JSON.stringify({p:pages,i:idx}))}catch(e){}}
-let pages=[{t:'',s:[]}],idx=0;try{const d=JSON.parse(localStorage.getItem('moleskine:v2')||'null'),o=JSON.parse(localStorage.getItem('moleskine:v1')||'null');if(d&&d.p&&d.p.length){pages=d.p;idx=Math.min(d.i||0,pages.length-1)}else if(o)pages=[{t:o.t||'',s:o.s||[]}]}catch(e){}ta.value=pages[idx].t;strokes=pages[idx].s;
+function save(){try{pages[idx]={t:ta.value,s:strokes,im:ims};localStorage.setItem('moleskine:v2',JSON.stringify({p:pages,i:idx}))}catch(e){toast('Storage is full: recent changes may not be saved')}}
+let pages=[{t:'',s:[]}],idx=0,ims=[];try{const d=JSON.parse(localStorage.getItem('moleskine:v2')||'null'),o=JSON.parse(localStorage.getItem('moleskine:v1')||'null');if(d&&d.p&&d.p.length){pages=d.p;idx=Math.min(d.i||0,pages.length-1)}else if(o)pages=[{t:o.t||'',s:o.s||[]}]}catch(e){}ta.value=pages[idx].t;strokes=pages[idx].s;ims=pages[idx].im=pages[idx].im||[];
 
 /* cover and elastic band */
 function openBook(){if(book.classList.contains('open'))return;cover.classList.add('pull');setTimeout(()=>{book.classList.add('open');cover.classList.remove('pull');fit()},380)}
@@ -181,11 +191,12 @@ ta.addEventListener('keydown',e=>{if(e.key=='Tab'&&sug.firstChild){e.preventDefa
 $('#bsh').onclick=async()=>{try{await document.fonts.load("26px Caveat")}catch(e){}
  const W=Math.max(320,paper.clientWidth),mw=W-58-18,g=document.createElement('canvas').getContext('2d');g.font="500 26px Caveat, cursive";
  const lines=[];(ta.value||'').split('\n').forEach(par=>{let l='';par.split(' ').forEach(w=>{const t=l?l+' '+w:w;if(g.measureText(t).width>mw&&l){lines.push(l);l=w}else l=t});lines.push(l)});
- let sy=0;strokes.forEach(s=>s.forEach(p=>sy=Math.max(sy,p[1]+30)));
+ let sy=0;strokes.forEach(s=>s.forEach(p=>sy=Math.max(sy,p[1]+30)));ims.forEach(m=>sy=Math.max(sy,m.y+m.w*m.a-64+24));
  const H=Math.max(420,64+lines.length*32+48,64+sy),S=2,c=document.createElement('canvas');c.width=W*S;c.height=H*S;const x=c.getContext('2d');x.scale(S,S);
  x.fillStyle='#f7e98e';x.fillRect(0,0,W,H);x.fillStyle='#ecd978';x.fillRect(0,0,W,64);x.fillStyle='rgba(200,60,60,.5)';x.fillRect(0,62,W,2);x.fillRect(44,0,2,H);
  x.fillStyle='rgba(52,88,160,.38)';for(let y=64+27;y<H;y+=32)x.fillRect(0,y,W,1);
  x.font="500 26px Caveat, cursive";x.fillStyle='#1d2a5c';lines.forEach((l,i)=>x.fillText(l,58,64+24+i*32));
+ for(const m of ims)await new Promise(r=>{const i=new Image();i.onload=()=>{x.save();x.translate(m.x+m.w/2,m.y+m.w*m.a/2);x.rotate(m.r*Math.PI/180);x.fillStyle='#fff';x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=6;x.fillRect(-m.w/2,-m.w*m.a/2,m.w,m.w*m.a);x.shadowColor='transparent';const bw=5,iw=m.w-2*bw,ih=m.w*m.a-2*bw,q=Math.max(iw/i.width,ih/i.height);x.beginPath();x.rect(-iw/2,-ih/2,iw,ih);x.clip();x.drawImage(i,-i.width*q/2,-i.height*q/2,i.width*q,i.height*q);x.restore();r()};i.onerror=r;i.src=m.d});
  x.drawImage(cv,0,64,cv.width/dpr(),cv.height/dpr());
  const txt=(ta.value||'My notebook page').slice(0,900);
  c.toBlob(async b=>{const f=new File([b],'notebook-page.png',{type:'image/png'});
@@ -196,13 +207,14 @@ $('#bsh').onclick=async()=>{try{await document.fonts.load("26px Caveat")}catch(e
 /* pages: swipe up/down to turn, swipe left-to-right to tear */
 let busy=false;
 function showPn(){paper.querySelector('.top span:last-child').textContent=(idx+1)+' / '+pages.length}
-function load(i){idx=i;ta.value=pages[i].t;strokes=pages[i].s;pad.scrollTop=0;fit();redraw();showPn();hideSug();save()}
+function load(i){idx=i;ta.value=pages[i].t;strokes=pages[i].s;ims=pages[i].im=pages[i].im||[];pad.scrollTop=0;fit();redraw();renderPhotos();showPn();hideSug();save()}
 function snapUrl(sk,w,h){const c=document.createElement('canvas'),d=dpr();c.width=w*d;c.height=h*d;const x=c.getContext('2d');x.scale(d,d);x.lineCap=x.lineJoin='round';x.strokeStyle='#1d2a5c';sk.forEach(st=>st.forEach((p,i)=>{if(i){x.beginPath();x.lineWidth=p[3];x.moveTo(st[i-1][0],st[i-1][1]);x.lineTo(p[0],p[1]);x.stroke()}}));return c.toDataURL()}
 function leaf(pg,st,n){const l=document.createElement('div');l.className='paper lf';l.style.cssText='left:'+pad.offsetLeft+'px;top:'+pad.offsetTop+'px;width:'+pad.clientWidth+'px;height:'+pad.clientHeight+'px;border-radius:3px 8px 0 0;background-position:0 '+(64-st)+'px';
  const tp=paper.querySelector('.top').cloneNode(true);tp.querySelector('span:last-child').textContent=(n+1)+' / '+pages.length;
  const t=document.createElement('div');t.textContent=pg.t;t.style.cssText="padding:0 18px 0 58px;font:500 26px/32px Caveat,cursive;color:#1d2a5c;white-space:pre-wrap;overflow-wrap:anywhere";
  const im=new Image(),W=paper.clientWidth,H=ta.offsetHeight;im.src=snapUrl(pg.s,W,H);im.style.cssText='position:absolute;left:0;top:64px;width:'+W+'px;height:'+H+'px';
- const w=document.createElement('div');w.className='in';w.style.transform='translateY('+(-st)+'px)';w.append(tp,t,im);l.append(w);$('.inside').appendChild(l);return l}
+ const pho=(pg.im||[]).map(m=>{const i=new Image();i.src=m.d;i.style.cssText='position:absolute;object-fit:cover;box-sizing:border-box;border:5px solid #fff;box-shadow:0 3px 6px rgba(0,0,0,.35);left:'+m.x+'px;top:'+m.y+'px;width:'+m.w+'px;height:'+m.w*m.a+'px;transform:rotate('+m.r+'deg)';return i});
+ const w=document.createElement('div');w.className='in';w.style.transform='translateY('+(-st)+'px)';w.append(tp,t,...pho,im);l.append(w);$('.inside').appendChild(l);return l}
 function go(d){if(busy)return;if(d<0&&idx==0){closeBook();return}
  busy=true;save();const st=pad.scrollTop,ni=idx+d;if(ni>=pages.length)pages.push({t:'',s:[]});
  const l=leaf(d>0?pages[idx]:pages[ni],st,d>0?idx:ni);
@@ -218,6 +230,21 @@ pad.addEventListener('touchend',e=>{if(!t0||!book.classList.contains('open'))ret
  if(dx>90&&Math.abs(dy)<dx*.5)tearPage();
  else if(Math.abs(dy)>70&&Math.abs(dx)<Math.abs(dy)*.6){if(dy<0&&a.bot)go(1);else if(dy>0&&a.top)go(-1)}},{passive:true});
 let ec=0;$('#ber').onclick=()=>{const b=$('#ber');if(!ec){b.innerHTML='<i>❓</i>Sure?';ec=setTimeout(()=>{ec=0;b.innerHTML='<i>🗑</i>Erase'},3000);return}clearTimeout(ec);ec=0;b.innerHTML='<i>🗑</i>Erase';pages=[{t:'',s:[]}];load(0);toast('Notebook erased')};
+/* photos */
+const ph=$('#ph'),fph=$('#fph');
+function renderPhotos(){ph.innerHTML='';ims.forEach(m=>{const d=document.createElement('div');d.className='ph';const pos=()=>{d.style.cssText='left:'+m.x+'px;top:'+m.y+'px;width:'+m.w+'px;height:'+m.w*m.a+'px;transform:rotate('+m.r+'deg)'};pos();
+ const im=new Image();im.src=m.d;im.draggable=false;const x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Remove photo');const rz=document.createElement('div');rz.className='rz';d.append(im,x,rz);
+ d.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});let g=null;
+ d.onpointerdown=e=>{if(e.target==x)return;d.setPointerCapture(e.pointerId);g={k:e.target==rz?'r':'m',x:e.clientX,y:e.clientY,mx:m.x,my:m.y,mw:m.w};e.stopPropagation()};
+ d.onpointermove=e=>{if(!g)return;const dx=e.clientX-g.x,dy=e.clientY-g.y;if(g.k=='m'){m.x=Math.max(-m.w*.5,Math.min(paper.clientWidth-m.w*.5,g.mx+dx));m.y=Math.max(0,g.my+dy)}else m.w=Math.max(70,Math.min(paper.clientWidth,g.mw+dx));pos()};
+ d.onpointerup=d.onpointercancel=()=>{if(g){g=null;save()}};
+ x.onclick=()=>{ims.splice(ims.indexOf(m),1);renderPhotos();save()};ph.appendChild(d)})}
+$('#bph').onclick=()=>fph.click();
+fph.onchange=()=>{const f=fph.files[0];fph.value='';if(!f)return;const u=URL.createObjectURL(f),im=new Image();
+ im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
+  const w=Math.min(260,paper.clientWidth*.62);ims.push({d:c.toDataURL('image/jpeg',.78),x:Math.round((paper.clientWidth-w)/2+Math.random()*30-15),y:Math.round(pad.scrollTop+110),w:Math.round(w),a:c.height/c.width,r:+(Math.random()*5-2.5).toFixed(1)});renderPhotos();save();toast('Photo added: drag to move, corner to resize, × to remove')};
+ im.onerror=()=>{URL.revokeObjectURL(u);toast('Could not read that photo')};im.src=u};
+renderPhotos();
 showPn();
 const FS=document.documentElement,fsOn=()=>document.fullscreenElement||document.webkitFullscreenElement;
 if((document.fullscreenEnabled||document.webkitFullscreenEnabled)&&FS.requestFullscreen||FS.webkitRequestFullscreen&&document.webkitFullscreenEnabled){const b=$('#bfs');b.style.display='';
