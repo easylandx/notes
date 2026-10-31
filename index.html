@@ -9,6 +9,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Notebook">
 <meta name="theme-color" content="#e6d36a">
+<meta name="application-name" content="Notebook">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
 :root{--d1:#3b2f27;--d2:#120d0a;--btn:#e8dcc0;--bar:#15110e;box-sizing:border-box}
@@ -88,12 +93,15 @@ html,body{background:#d2b843}
 #ph{position:absolute;inset:0;z-index:2;pointer-events:none}
 .ph{position:absolute;pointer-events:auto;touch-action:none;cursor:grab;filter:drop-shadow(0 3px 5px rgba(0,0,0,.35))}
 .ph img{display:block;width:100%;height:100%;object-fit:cover;border:5px solid #fff;border-radius:2px;-webkit-user-drag:none;user-select:none;pointer-events:none}
-.ph::before{content:"";position:absolute;left:50%;top:-9px;width:54px;height:18px;margin-left:-27px;background:rgba(240,235,200,.78);transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.2);z-index:1}
 .ph .x{position:absolute;right:-9px;top:-9px;width:26px;height:26px;border-radius:50%;border:0;background:#3b2f27;color:#fff;font:15px/26px sans-serif;padding:0;z-index:2}
+.ph .ok{position:absolute;left:-9px;top:-9px;width:28px;height:28px;border-radius:50%;border:2px solid #fff;background:#2fa84f;color:#fff;font:700 16px/24px sans-serif;padding:0;z-index:2;box-shadow:0 1px 3px rgba(0,0,0,.35)}
+.ph.placed{cursor:default}.ph.placed .x,.ph.placed .rz,.ph.placed .ok{display:none}
 .ph .rz{position:absolute;right:-8px;bottom:-8px;width:24px;height:24px;border-radius:50%;background:#3b2f27;border:2px solid #fff;z-index:2;touch-action:none}
 @media(max-width:600px) and (orientation:portrait){.bar button{padding:4px 3px}}
 .top{-webkit-user-select:none;user-select:none}
 .top .pn{cursor:pointer;padding:3px 10px;border:1px solid rgba(74,58,18,.45);border-radius:12px;background:rgba(74,58,18,.1);color:#4a3a12;text-transform:none;letter-spacing:.04em}
+#ip{display:none;position:absolute;left:50%;bottom:calc(74px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:8;width:min(300px,86%);padding:14px 16px;border-radius:16px;background:#3b2f27;color:#f3e38a;font:14px/1.45 'Special Elite',monospace;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+#ip.show{display:block}
 #pj{display:none;position:absolute;right:14px;top:80px;z-index:8;grid-template-columns:repeat(5,44px);gap:8px;padding:10px;max-height:50%;overflow-y:auto;border-radius:16px;background:#3b2f27;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 #pj.show{display:grid}
 #pj button{height:40px;border:0;border-radius:10px;background:#f3e38a;color:#3b2f27;font:15px 'Special Elite',monospace;padding:0}
@@ -124,10 +132,12 @@ html,body{background:#d2b843}
     <button id="bsh"><i>📤</i>WhatsApp</button>
     <button id="bfs" style="display:none"><i>⛶</i>Full</button>
     <button id="bun"><i>↩</i>Undo</button>
+    <button id="bin" style="display:none"><i>📲</i>Install</button>
    </div>
   </div>
   <div id="lp"><button data-l="en-US"><b>EN</b><small>English</small></button><button data-l="es-ES"><b>ES</b><small>Español</small></button></div>
   <div id="sp"><button data-c="#111111" style="background:#111111" aria-label="Black"></button><button data-c="#1f4fd8" style="background:#1f4fd8" aria-label="Blue"></button><button data-c="#d62828" style="background:#d62828" aria-label="Red"></button></div>
+  <div id="ip"></div>
   <div id="pj"></div>
   <div class="cover" id="cover"><div class="band" id="band"></div><b>NOTES</b></div>
  </div>
@@ -324,17 +334,18 @@ pad.addEventListener('wheel',e=>{if(mode=='sketch'||!book.classList.contains('op
 let ec=0;$('#ber').onclick=()=>{const b=$('#ber');if(!ec){b.innerHTML='<i>❓</i>Sure?';ec=setTimeout(()=>{ec=0;b.innerHTML='<i>🗑</i>Erase'},3000);return}clearTimeout(ec);ec=0;b.innerHTML='<i>🗑</i>Erase';pages=[{t:'',s:[]}];load(0);toast('Notebook erased')};
 /* photos */
 const ph=$('#ph'),fph=$('#fph');
-function renderPhotos(){ph.innerHTML='';ims.forEach(m=>{const d=document.createElement('div');d.className='ph';const pos=()=>{d.style.cssText='left:'+m.x+'px;top:'+m.y+'px;width:'+m.w+'px;height:'+m.w*m.a+'px;transform:rotate('+m.r+'deg)'};pos();
- const im=new Image();im.src=m.d;im.draggable=false;const x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Remove photo');const rz=document.createElement('div');rz.className='rz';d.append(im,x,rz);
+function renderPhotos(){ph.innerHTML='';ims.forEach(m=>{const d=document.createElement('div');d.className='ph'+(m.p===false?'':' placed');const pos=()=>{d.style.cssText='left:'+m.x+'px;top:'+m.y+'px;width:'+m.w+'px;height:'+m.w*m.a+'px;transform:rotate('+m.r+'deg)'};pos();
+ const im=new Image();im.src=m.d;im.draggable=false;const x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Remove photo');const rz=document.createElement('div');rz.className='rz';const ok=document.createElement('button');ok.className='ok';ok.textContent='✓';ok.setAttribute('aria-label','Place photo');d.append(im,x,rz,ok);
  d.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});let g=null;
- d.onpointerdown=e=>{if(e.target==x)return;d.setPointerCapture(e.pointerId);g={k:e.target==rz?'r':'m',x:e.clientX,y:e.clientY,mx:m.x,my:m.y,mw:m.w};e.stopPropagation()};
- d.onpointermove=e=>{if(!g)return;const dx=e.clientX-g.x,dy=e.clientY-g.y;if(g.k=='m'){m.x=Math.max(-m.w*.5,Math.min(paper.clientWidth-m.w*.5,g.mx+dx));m.y=Math.max(0,g.my+dy)}else m.w=Math.max(70,Math.min(paper.clientWidth,g.mw+dx));pos()};
- d.onpointerup=d.onpointercancel=()=>{if(g){g=null;save()}};
+ d.onpointerdown=e=>{if(e.target==x||e.target==ok)return;d.setPointerCapture(e.pointerId);g={k:m.p===false?(e.target==rz?'r':'m'):'t',x:e.clientX,y:e.clientY,mx:m.x,my:m.y,mw:m.w};e.stopPropagation()};
+ d.onpointermove=e=>{if(!g)return;const dx=e.clientX-g.x,dy=e.clientY-g.y;if(g.k=='t'){if(Math.abs(dx)+Math.abs(dy)>6)g.moved=1;return}if(g.k=='m'){m.x=Math.max(-m.w*.5,Math.min(paper.clientWidth-m.w*.5,g.mx+dx));m.y=Math.max(0,g.my+dy)}else m.w=Math.max(70,Math.min(paper.clientWidth,g.mw+dx));pos()};
+ d.onpointerup=d.onpointercancel=e=>{if(!g)return;const t=g.k=='t'&&!g.moved&&e.type=='pointerup';g=null;if(t){m.p=false;renderPhotos();save()}else if(m.p===false)save()};
+ ok.onclick=()=>{m.p=true;renderPhotos();save()};
  x.onclick=()=>{ims.splice(ims.indexOf(m),1);renderPhotos();save()};ph.appendChild(d)})}
 $('#bph').onclick=()=>fph.click();
 fph.onchange=()=>{const f=fph.files[0];fph.value='';if(!f)return;const u=URL.createObjectURL(f),im=new Image();
  im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
-  const w=Math.min(260,paper.clientWidth*.62);ims.push({d:c.toDataURL('image/jpeg',.78),x:Math.round((paper.clientWidth-w)/2+Math.random()*30-15),y:Math.round(pad.scrollTop+110),w:Math.round(w),a:c.height/c.width,r:+(Math.random()*5-2.5).toFixed(1)});renderPhotos();save();toast('Photo added: drag to move, corner to resize, × to remove')};
+  const w=Math.min(260,paper.clientWidth*.62);ims.push({d:c.toDataURL('image/jpeg',.78),x:Math.round((paper.clientWidth-w)/2+Math.random()*30-15),y:Math.round(pad.scrollTop+110),w:Math.round(w),a:c.height/c.width,r:+(Math.random()*5-2.5).toFixed(1),p:false});renderPhotos();save();toast('Photo added: drag to move, corner to resize, ✓ to place')};
  im.onerror=()=>{URL.revokeObjectURL(u);toast('Could not read that photo')};im.src=u};
 renderPhotos();
 /* page chooser: tap the page count */
@@ -343,6 +354,16 @@ function openPj(){pj.innerHTML='';pages.forEach((p,i)=>{const b=document.createE
 $('#pn').onclick=e=>{e.stopPropagation();if(busy)return;pj.classList.contains('show')?pj.classList.remove('show'):openPj()};
 pj.onclick=e=>{const b=e.target.closest('button');if(!b)return;pj.classList.remove('show');const j=+b.dataset.i;if(j==idx||busy)return;if(j==idx+1)go(1);else if(j==idx-1)go(-1);else{save();load(j)}};
 document.addEventListener('click',e=>{if(!e.target.closest('#pj,#pn'))pj.classList.remove('show')});
+/* install as an app (PWA) */
+let dip=null;const bin=$('#bin'),ip=$('#ip'),standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true,
+ IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=='MacIntel'&&navigator.maxTouchPoints>1);
+if(!standalone())bin.style.display='';
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;if(!standalone())bin.style.display=''});
+addEventListener('appinstalled',()=>{dip=null;bin.style.display='none';ip.classList.remove('show');toast('Installed! Open Notebook from your home screen')});
+bin.onclick=async()=>{if(dip){ip.classList.remove('show');try{dip.prompt();await dip.userChoice}catch(e){}dip=null;return}
+ ip.innerHTML=IOS?'To install: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.':'To install: open your browser menu (⋮ or ⋯) and choose <b>Install app</b> or <b>Add to Home screen</b>.';ip.classList.toggle('show')};
+document.addEventListener('click',e=>{if(!e.target.closest('#ip,#bin'))ip.classList.remove('show')});
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 showPn();
 const FS=document.documentElement,fsOn=()=>document.fullscreenElement||document.webkitFullscreenElement;
 if((document.fullscreenEnabled||document.webkitFullscreenEnabled)&&FS.requestFullscreen||FS.webkitRequestFullscreen&&document.webkitFullscreenEnabled){const b=$('#bfs');b.style.display='';
