@@ -28,7 +28,7 @@ textarea{display:block;width:100%;border:0;outline:0;background:transparent;resi
 textarea::placeholder{color:rgba(31,79,216,.4)}
 #sk{position:absolute;left:0;top:64px;display:block;width:100%;height:1400px;background:transparent;z-index:3;pointer-events:none}
 .sketching #sk{pointer-events:auto;touch-action:none;cursor:crosshair}
-.sketching textarea{pointer-events:none}
+.sketching textarea,.browsing textarea{pointer-events:none}
 .sug{min-height:34px;padding:6px 12px 0;background:var(--bar);font-family:'Caveat',cursive;font-size:20px}
 .sug button{max-width:100%;border:1px dashed rgba(232,220,192,.5);background:rgba(232,220,192,.1);color:var(--btn);border-radius:16px;padding:1px 12px;font:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar{display:flex;flex:0 0 auto;justify-content:space-around;padding:6px 6px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bar)}
@@ -175,15 +175,15 @@ const pt=e=>{const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.client
 cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);const p=pt(e);cur=[p];strokes.push(cur);setup();seg(p,[p[0]+.1,p[1],0,SH()?5:3,p[4]])};
 cv.onpointermove=e=>{if(!cur)return;const p=pt(e),a=cur[cur.length-1],sp=Math.hypot(p[0]-a[0],p[1]-a[1])/Math.max(1,p[2]-a[2]);p[3]=SH()?Math.max(4,Math.min(6.2,a[3]*.8+(6-sp*1.2)*.2)):Math.max(1.3,Math.min(3.4,a[3]*.7+(3.6-sp*2.4)*.3));seg(a,p);cur.push(p)};
 cv.onpointerup=cv.onpointercancel=cv.onlostpointercapture=()=>{if(cur){cur=null;save()}};
-function setMode(m,p){mode=m;if(p)pen=p;paper.parentNode.classList.toggle('sketching',mode=='sketch');
- $('#bsharp').classList.toggle('on',mode=='sketch');$('#bmode').classList.toggle('on',mode=='write');
- if(mode=='write')$('#sp').classList.remove('show');
- toast(mode=='write'?'Write mode: type and scroll':pen=='sharpie'?'Sharpie: pick a colour and draw with your finger or mouse':'Sketch mode: draw on the page')}
+let back='write';
+function setMode(m,p){if(m=='sketch'&&mode!='sketch')back=mode;mode=m;if(p)pen=p;const pd=paper.parentNode;
+ pd.classList.toggle('sketching',m=='sketch');pd.classList.toggle('browsing',m=='browse');if(m!='write')ta.blur();
+ $('#bsharp').classList.toggle('on',m=='sketch');$('#bmode').classList.toggle('on',m=='write');$('#sp').classList.toggle('show',m=='sketch');
+ toast(m=='write'?'Write on: type with the keyboard':m=='sketch'?'Sharpie on: pick a colour and draw':'Write off: swipe freely')}
 function paintSel(){$('#bsharp').style.setProperty('--sc',shcol);$('#sp').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.c==shcol))}
-$('#bmode').onclick=()=>setMode('write');
-$('#bsharp').onclick=()=>{const s=$('#sp');if(mode=='sketch')s.classList.toggle('show');else{setMode('sketch','sharpie');s.classList.add('show')}};
-$('#sp').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.w){setMode('write');return}shcol=b.dataset.c;paintSel();$('#sp').classList.remove('show')};
-document.addEventListener('click',e=>{if(!e.target.closest('#sp,#bsharp'))$('#sp').classList.remove('show')});
+$('#bmode').onclick=()=>setMode(mode=='write'?'browse':'write');
+$('#bsharp').onclick=()=>setMode(mode=='sketch'?back:'sketch','sharpie');
+$('#sp').onclick=e=>{const b=e.target.closest('button');if(!b||!b.dataset.c)return;shcol=b.dataset.c;paintSel()};
 paintSel();
 
 /* voice memos written out in handwriting */
@@ -294,7 +294,7 @@ function tearPage(){if(busy)return;busy=true;save();const l=leaf(pages[idx],pad.
  pages.splice(idx,1);if(!pages.length)pages.push({t:'',s:[]});load(Math.min(idx,pages.length-1));
  l.classList.add('tr');setTimeout(()=>{l.remove();busy=false},700)}
 let t0=null;
-pad.addEventListener('touchstart',e=>{if(mode!='write'||e.touches.length!=1){t0=null;return}const t=e.touches[0];t0={x:t.clientX,y:t.clientY,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2}},{passive:true});
+pad.addEventListener('touchstart',e=>{if(mode=='sketch'||e.touches.length!=1){t0=null;return}const t=e.touches[0];t0={x:t.clientX,y:t.clientY,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2}},{passive:true});
 pad.addEventListener('touchend',e=>{if(!t0||!book.classList.contains('open'))return;const t=e.changedTouches[0],dx=t.clientX-t0.x,dy=t.clientY-t0.y,a=t0;t0=null;
  gesture(dx,dy,a)},{passive:true});
 $('#bun').onclick=undo;
@@ -304,13 +304,13 @@ function gesture(dx,dy,a){if(dx>90&&Math.abs(dy)<dx*.5)tearPage();
  else if(Math.abs(dy)>70&&Math.abs(dx)<Math.abs(dy)*.6){if(dy<0&&a.bot)go(1);else if(dy>0&&a.top)go(-1)}}
 /* mouse: same swipes by dragging (drag that selects text is left alone, unless it starts on the header or red margin) */
 let m0=null;
-pad.addEventListener('mousedown',e=>{if(e.button||mode!='write'||!book.classList.contains('open')||e.target.closest('.ph,a')){m0=null;return}const r=paper.getBoundingClientRect();
+pad.addEventListener('mousedown',e=>{if(e.button||mode=='sketch'||!book.classList.contains('open')||e.target.closest('.ph,a')){m0=null;return}const r=paper.getBoundingClientRect();
  m0={x:e.clientX,y:e.clientY,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2,force:!!e.target.closest('.top')||e.clientX-r.left<56}});
 addEventListener('mouseup',e=>{if(!m0)return;const a=m0,dx=e.clientX-a.x,dy=e.clientY-a.y;m0=null;if(Math.abs(dx)<20&&Math.abs(dy)<20)return;
  if(!a.force&&ta.selectionStart!=ta.selectionEnd)return;if(a.force)ta.setSelectionRange(ta.selectionEnd,ta.selectionEnd);gesture(dx,dy,a)});
 /* mouse wheel / trackpad: keep scrolling past the top or bottom edge to turn the page */
 let wb={t:0,top:0,bot:0,sum:0};
-pad.addEventListener('wheel',e=>{if(mode!='write'||!book.classList.contains('open'))return;const n=performance.now();
+pad.addEventListener('wheel',e=>{if(mode=='sketch'||!book.classList.contains('open'))return;const n=performance.now();
  if(n-wb.t>300)wb={t:n,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2,sum:0};wb.t=n;
  if((e.deltaY>0&&wb.bot)||(e.deltaY<0&&wb.top))wb.sum+=e.deltaY;
  if(Math.abs(wb.sum)>160){const d=wb.sum>0?1:-1;wb.sum=0;wb.top=wb.bot=0;go(d)}},{passive:true});
