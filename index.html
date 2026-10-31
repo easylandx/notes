@@ -95,7 +95,7 @@ html,body{background:#d2b843}
   <div class="inside">
    <div class="pad" id="pad">
     <div class="paper" id="paper">
-     <div class="top"><span>Notebook</span><a class="epx" href="https://easylandx.github.io/" target="_blank" rel="noopener">EasyLandX</a><span>1</span></div>
+     <div class="top"><span>Notebook</span><a class="epx" href="https://easylandx.github.io/" target="_blank" rel="noopener">EasyPageX</a><span>1</span></div>
      <textarea id="ta" spellcheck="false" placeholder="Start writing, or tap Voice and speak…"></textarea>
      <div id="ph"></div>
      <canvas id="sk"></canvas>
@@ -154,22 +154,28 @@ cv.onpointerup=cv.onpointercancel=cv.onlostpointercapture=()=>{if(cur){cur=null;
 $('#bmode').onclick=()=>{mode=mode=='write'?'sketch':'write';paper.parentNode.classList.toggle('sketching',mode=='sketch');$('#bmode').innerHTML=mode=='write'?'<i>✎</i>Write':'<i>✏️</i>Sketch';$('#bmode').classList.toggle('on',mode=='sketch');toast(mode=='sketch'?'Sketch mode: draw on the page':'Write mode: type and scroll')};
 
 /* voice memos written out in handwriting */
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,hearing=false,want=false,vlang='en-US',vbase='';
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,hearing=false,want=false,vlang='en-US',vbase='',vint=0;const PAUSE=1000;
 const vui=on=>{hearing=on;$('#bmic').classList.toggle('on',on);$('#bmic').classList.toggle('rec',on)};
 $('#bmic').onclick=()=>{if(!SR)return toast('Voice dictation is not supported by this browser. Use your iPhone keyboard microphone instead.');
  if(want||hearing){want=false;try{rec.stop()}catch(e){}return}
  lp.classList.toggle('show')};
 const lp=$('#lp');lp.onclick=e=>{const b=e.target.closest('button');if(b)startVoice(b.dataset.l)};
 document.addEventListener('click',e=>{if(!e.target.closest('#lp,#bmic'))lp.classList.remove('show')});
-function startVoice(l){lp.classList.remove('show');vlang=l;want=true;hideSug();beginVoice();toast(l=='es-ES'?'Escuchando… (ES)':'Listening… (EN)')}
-function beginVoice(){
+function startVoice(l){lp.classList.remove('show');vlang=l;want=true;hideSug();beginVoice(true);toast(l=='es-ES'?'Escuchando… (ES)':'Listening… (EN)')}
+function beginVoice(first){
  rec=new SR();rec.lang=vlang;rec.continuous=true;rec.interimResults=true;rec.maxAlternatives=1;
- vbase=ta.value;const sep=vbase&&!/\s$/.test(vbase)?' ':'',cap=!vbase.trim()||/[.!?\n]\s*$/.test(vbase);
- rec.onresult=e=>{const ps=[];for(let i=0;i<e.results.length;i++)ps.push(e.results[i][0].transcript.trim());
-  let t=ps.join(' ').replace(/\s+/g,' ').trim();if(t&&cap)t=t[0].toUpperCase()+t.slice(1);
-  ta.value=vbase+(t?sep+t:'');fit();if(pad.scrollHeight-pad.scrollTop-pad.clientHeight<160)pad.scrollTop=pad.scrollHeight};
+ vbase=ta.value;const seen=[],sep=vbase&&!/\s$/.test(vbase)?' ':'',cap=!vbase.trim()||/[.!?\n]\s*$/.test(vbase);
+ rec.onresult=e=>{const n=performance.now(),up=x=>x[0].toUpperCase()+x.slice(1);let live=false,t='',lead=null;
+  for(let i=0;i<e.results.length;i++){const r=e.results[i],x=r[0].transcript.replace(/\s+/g,' ').trim();if(!r.isFinal)live=true;
+   /* a result that begins after a pause (silence since the last live update) goes on a new line */
+   if(seen[i]===undefined)seen[i]=(i>0||!first)&&n-vint>PAUSE&&(i>0||vbase.trim().length>0);
+   if(!x)continue;const nl=seen[i];
+   if(lead===null){lead=nl?(!vbase.trim()||/\n\s*$/.test(vbase)?'':'\n'):sep;t=(nl||cap)?up(x):x}
+   else t+=nl?'\n'+up(x):' '+x}
+  if(live)vint=n;
+  ta.value=vbase+(t?lead+t:'');fit();if(pad.scrollHeight-pad.scrollTop-pad.clientHeight<160)pad.scrollTop=pad.scrollHeight};
  rec.onerror=e=>{if(e.error=='no-speech'||e.error=='aborted')return;want=false;toast(e.error=='not-allowed'||e.error=='service-not-allowed'?'Microphone blocked. Allow it in your browser settings.':'Microphone not available here. Try opening the page in its own tab.')};
- rec.onend=()=>{save();if(want&&!busyStart){busyStart=true;setTimeout(()=>{busyStart=false;if(want)try{beginVoice()}catch(e){want=false;vui(false)}},150)}else{vui(false);suggest()}};
+ rec.onend=()=>{save();if(want&&!busyStart){busyStart=true;setTimeout(()=>{busyStart=false;if(want)try{beginVoice(false)}catch(e){want=false;vui(false)}},150)}else{vui(false);suggest()}};
  try{rec.start();vui(true)}catch(e){want=false;vui(false)}}
 let busyStart=false;
 
