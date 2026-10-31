@@ -244,7 +244,7 @@ function beginVoice(first){
    if(lead===null){lead=nl?(!vbase.trim()||/\n\s*$/.test(vbase)?'':'\n'):sep;t=(nl||cap)?up(x):x}
    else t+=nl?'\n'+up(x):' '+x}
   if(live)vint=n;
-  t=post(t);ta.value=vbase+(t?lead+t:'');fit();if(pad.scrollHeight-pad.scrollTop-pad.clientHeight<160)pad.scrollTop=pad.scrollHeight};
+  t=post(t);ta.value=vbase+(t?lead+t:'');fit();if(autoFlip()){try{rec.abort()}catch(e){}return}if(pad.scrollHeight-pad.scrollTop-pad.clientHeight<160)pad.scrollTop=pad.scrollHeight};
  rec.onerror=e=>{if(e.error=='no-speech'||e.error=='aborted')return;want=false;toast(e.error=='not-allowed'||e.error=='service-not-allowed'?'Microphone blocked. Allow it in your browser settings.':'Microphone not available here. Try opening the page in its own tab.')};
  rec.onend=()=>{save();if(want&&!busyStart){busyStart=true;setTimeout(()=>{busyStart=false;if(want)try{beginVoice(false)}catch(e){want=false;vui(false)}},60)}else{vui(false);suggest()}};
  try{rec.start();vui(true)}catch(e){want=false;vui(false)}}
@@ -263,7 +263,27 @@ function suggest(){bi={};voc={};learn(seed);learn(ta.value);
  if(!s)return hideSug();sug.innerHTML='';const b=document.createElement('button');b.textContent='✨ '+(part?part:'')+s.replace(/^/,'');b.dataset.s=s;b.onclick=accept;sug.appendChild(b)}
 function hideSug(){sug.innerHTML=''}
 function accept(){const b=sug.firstChild;if(!b)return;const p=ta.selectionStart;ta.setRangeText(b.dataset.s,p,p,'end');ta.focus();onType()}
-function onType(){fit();save();suggest()}
+/* auto page flip: when the text reaches the bottom of the page, the overflow continues on the next page */
+function overflowCut(){
+ const avail=pad.clientHeight-paper.querySelector('.top').offsetHeight-16;
+ if(avail<96||!book.classList.contains('open'))return -1;
+ const v=ta.value;ta.style.height='auto';
+ if(ta.scrollHeight<=avail){fit();return -1}
+ let lo=0,hi=v.length;
+ while(lo<hi){const m=(lo+hi+1)>>1;ta.value=v.slice(0,m);ta.style.height='auto';if(ta.scrollHeight<=avail)lo=m;else hi=m-1}
+ ta.value=v;fit();return lo}
+function autoFlip(){
+ if(busy)return false;
+ const v=ta.value,c=ta.selectionStart;let cut=overflowCut();
+ if(cut<0||cut>=v.length){if(cut>=0)ta.setSelectionRange(c,c);return false}
+ if(!/\s/.test(v[cut-1]||' ')&&!/\s/.test(v[cut])){const k=v.slice(0,cut).search(/\S+$/);if(k>0)cut=k}
+ const head=v.slice(0,cut).replace(/\s+$/,''),tail=v.slice(cut).replace(/^[ \t]*\n?/,''),pos=Math.max(0,c-(v.length-tail.length)),nxt=pages[idx+1];
+ if(nxt)nxt.t=tail+(tail&&nxt.t?'\n':'')+nxt.t;else pages.push({t:tail,s:[]});
+ ta.value=head;fit();
+ if(c>head.length){go(1);const p=Math.min(pos,ta.value.length);ta.setSelectionRange(p,p);setTimeout(()=>{if(!busy)autoFlip()},850)}
+ else{ta.setSelectionRange(Math.min(c,head.length),Math.min(c,head.length));showPn();save()}
+ return true}
+function onType(e){fit();if(!(e&&e.isComposing)&&autoFlip())return;save();suggest()}
 ta.addEventListener('input',onType);ta.addEventListener('click',suggest);
 ta.addEventListener('keydown',e=>{if(e.key=='Tab'&&sug.firstChild){e.preventDefault();accept()}});
 
