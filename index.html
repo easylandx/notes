@@ -109,7 +109,7 @@ html,body{background:#d2b843}
     <button id="ber"><i>🗑</i>Erase</button>
     <button id="bsh"><i>📤</i>WhatsApp</button>
     <button id="bfs" style="display:none"><i>⛶</i>Full</button>
-    <button id="bcl"><i>📕</i>Close</button>
+    <button id="bun"><i>↩</i>Undo</button>
    </div>
   </div>
   <div id="lp"><button data-l="en-US"><b>EN</b><small>English</small></button><button data-l="es-ES"><b>ES</b><small>Español</small></button></div>
@@ -123,7 +123,22 @@ const $=s=>document.querySelector(s);
 const book=$('#book'),cover=$('#cover'),ta=$('#ta'),cv=$('#sk'),ctx=cv.getContext('2d'),pad=$('#pad'),paper=$('#paper'),sug=$('#sug');
 let strokes=[],mode='write',cur=null,last=null,cw=0,chh=0;
 function toast(m){const t=$('#toast');t.textContent=m;t.style.opacity=1;clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.opacity=0,2600)}
-function save(){try{pages[idx]={t:ta.value,s:strokes,im:ims};localStorage.setItem('moleskine:v2',JSON.stringify({p:pages,i:idx}))}catch(e){toast('Storage is full: recent changes may not be saved')}}
+/* undo history (per page): snapshots of text, strokes and photos */
+let hist=[],histT=0,histTextOnly=false;
+const snap=()=>({t:ta.value,s:strokes.map(s=>s.slice()),im:ims.map(m=>({...m}))});
+const imSig=a=>a.map(m=>m.x+','+m.y+','+m.w+','+m.r).join('|');
+function pushH(){const n=snap(),l=hist[hist.length-1];
+ if(l){const same=l.t===n.t,sk=l.s.length===n.s.length,pi=l.im.length===n.im.length&&imSig(l.im)===imSig(n.im);
+  if(same&&sk&&pi)return;
+  const textOnly=!same&&sk&&pi,now=performance.now();
+  if(textOnly&&histTextOnly&&now-histT<900&&hist.length>1){hist[hist.length-1]=n;histT=now;return}
+  histTextOnly=textOnly;histT=now}
+ hist.push(n);if(hist.length>80)hist.shift()}
+function undo(){if(hist.length<2)return toast('Nothing to undo');
+ hist.pop();const p=hist[hist.length-1];histTextOnly=false;
+ ta.value=p.t;strokes=p.s.map(s=>s.slice());ims=pages[idx].im=p.im.map(m=>({...m}));
+ fit();redraw();renderPhotos();hideSug();save()}
+function save(){try{pages[idx]={t:ta.value,s:strokes,im:ims};pushH();localStorage.setItem('moleskine:v2',JSON.stringify({p:pages,i:idx}))}catch(e){toast('Storage is full: recent changes may not be saved')}}
 let pages=[{t:'',s:[]}],idx=0,ims=[];try{const d=JSON.parse(localStorage.getItem('moleskine:v2')||'null'),o=JSON.parse(localStorage.getItem('moleskine:v1')||'null');if(d&&d.p&&d.p.length){pages=d.p;idx=Math.min(d.i||0,pages.length-1)}else if(o)pages=[{t:o.t||'',s:o.s||[]}]}catch(e){}ta.value=pages[idx].t;strokes=pages[idx].s;ims=pages[idx].im=pages[idx].im||[];
 
 /* cover and elastic band */
@@ -131,8 +146,7 @@ function openBook(){if(book.classList.contains('open'))return;cover.classList.ad
 function closeBook(){book.classList.remove('open');cover.classList.add('snap');setTimeout(()=>cover.classList.remove('snap'),700)}
 cover.onclick=openBook;let c0=null;
 cover.addEventListener('touchstart',e=>{c0=e.touches.length==1?{x:e.touches[0].clientX,y:e.touches[0].clientY}:null},{passive:true});
-cover.addEventListener('touchend',e=>{if(!c0)return;const t=e.changedTouches[0],dx=t.clientX-c0.x,dy=t.clientY-c0.y;c0=null;if(dy<-60&&Math.abs(dx)<Math.abs(dy)*.6)openBook()},{passive:true});$('#bcl').onclick=closeBook;
-
+cover.addEventListener('touchend',e=>{if(!c0)return;const t=e.changedTouches[0],dx=t.clientX-c0.x,dy=t.clientY-c0.y;c0=null;if(dy<-60&&Math.abs(dx)<Math.abs(dy)*.6)openBook()},{passive:true});
 /* sizing, ink */
 const dpr=()=>Math.min(devicePixelRatio||1,2);
 function setup(){const d=dpr();ctx.setTransform(d,0,0,d,0,0);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#1d2a5c'}
@@ -223,7 +237,7 @@ $('#bsh').onclick=async()=>{
 /* pages: swipe up/down to turn, swipe left-to-right to tear */
 let busy=false;
 function showPn(){paper.querySelector('.top span:last-child').textContent=(idx+1)+' / '+pages.length}
-function load(i){idx=i;ta.value=pages[i].t;strokes=pages[i].s;ims=pages[i].im=pages[i].im||[];pad.scrollTop=0;fit();redraw();renderPhotos();showPn();hideSug();save()}
+function load(i){hist=[];histTextOnly=false;idx=i;ta.value=pages[i].t;strokes=pages[i].s;ims=pages[i].im=pages[i].im||[];pad.scrollTop=0;fit();redraw();renderPhotos();showPn();hideSug();save()}
 function snapUrl(sk,w,h){const c=document.createElement('canvas'),d=dpr();c.width=w*d;c.height=h*d;const x=c.getContext('2d');x.scale(d,d);x.lineCap=x.lineJoin='round';x.strokeStyle='#1d2a5c';sk.forEach(st=>st.forEach((p,i)=>{if(i){x.beginPath();x.lineWidth=p[3];x.moveTo(st[i-1][0],st[i-1][1]);x.lineTo(p[0],p[1]);x.stroke()}}));return c.toDataURL()}
 function leaf(pg,st,n){const l=document.createElement('div');l.className='paper lf';l.style.cssText='left:'+pad.offsetLeft+'px;top:'+pad.offsetTop+'px;width:'+pad.clientWidth+'px;height:'+pad.clientHeight+'px;border-radius:3px 8px 0 0;background-position:0 '+(64-st)+'px';
  const tp=paper.querySelector('.top').cloneNode(true);tp.querySelector('span:last-child').textContent=(n+1)+' / '+pages.length;
@@ -244,7 +258,10 @@ let t0=null;
 pad.addEventListener('touchstart',e=>{if(mode!='write'||e.touches.length!=1){t0=null;return}const t=e.touches[0];t0={x:t.clientX,y:t.clientY,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2}},{passive:true});
 pad.addEventListener('touchend',e=>{if(!t0||!book.classList.contains('open'))return;const t=e.changedTouches[0],dx=t.clientX-t0.x,dy=t.clientY-t0.y,a=t0;t0=null;
  gesture(dx,dy,a)},{passive:true});
+$('#bun').onclick=undo;
+hist=[snap()];
 function gesture(dx,dy,a){if(dx>90&&Math.abs(dy)<dx*.5)tearPage();
+ else if(dx<-90&&Math.abs(dy)<-dx*.5)closeBook();
  else if(Math.abs(dy)>70&&Math.abs(dx)<Math.abs(dy)*.6){if(dy<0&&a.bot)go(1);else if(dy>0&&a.top)go(-1)}}
 /* mouse: same swipes by dragging (drag that selects text is left alone, unless it starts on the header or red margin) */
 let m0=null;
