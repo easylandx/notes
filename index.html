@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
-<title>Notebook</title>
+<title>NoteApp</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Notebook">
+<meta name="apple-mobile-web-app-title" content="NoteApp">
 <meta name="theme-color" content="#e6d36a">
-<meta name="application-name" content="Notebook">
+<meta name="application-name" content="NoteApp">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
@@ -116,7 +116,7 @@ html,body{background:#d2b843}
   <div class="inside">
    <div class="pad" id="pad">
     <div class="paper" id="paper">
-     <div class="top"><span>Notebook</span><a class="epx" href="https://easylandx.github.io/" target="_blank" rel="noopener">EasyPageX</a><span class="pn" id="pn">1</span></div>
+     <div class="top"><span>NoteApp</span><a class="epx" href="https://easylandx.github.io/" target="_blank" rel="noopener">EasyPageX</a><span class="pn" id="pn">1</span></div>
      <textarea id="ta" spellcheck="false" placeholder="Start writing, or tap Voice and speak…"></textarea>
      <div id="ph"></div>
      <canvas id="sk"></canvas>
@@ -331,7 +331,7 @@ pad.addEventListener('wheel',e=>{if(mode=='sketch'||!book.classList.contains('op
  if(n-wb.t>300)wb={t:n,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2,sum:0};wb.t=n;
  if((e.deltaY>0&&wb.bot)||(e.deltaY<0&&wb.top))wb.sum+=e.deltaY;
  if(Math.abs(wb.sum)>160){const d=wb.sum>0?1:-1;wb.sum=0;wb.top=wb.bot=0;go(d)}},{passive:true});
-let ec=0;$('#ber').onclick=()=>{const b=$('#ber');if(!ec){b.innerHTML='<i>❓</i>Sure?';ec=setTimeout(()=>{ec=0;b.innerHTML='<i>🗑</i>Erase'},3000);return}clearTimeout(ec);ec=0;b.innerHTML='<i>🗑</i>Erase';pages=[{t:'',s:[]}];load(0);toast('Notebook erased')};
+let ec=0;$('#ber').onclick=()=>{const b=$('#ber');if(!ec){b.innerHTML='<i>❓</i>Sure?';ec=setTimeout(()=>{ec=0;b.innerHTML='<i>🗑</i>Erase'},3000);return}clearTimeout(ec);ec=0;b.innerHTML='<i>🗑</i>Erase';pages=[{t:'',s:[]}];load(0);toast('NoteApp erased')};
 /* photos */
 const ph=$('#ph'),fph=$('#fph');
 function renderPhotos(){ph.innerHTML='';ims.forEach(m=>{const d=document.createElement('div');d.className='ph'+(m.p===false?'':' placed');const pos=()=>{d.style.cssText='left:'+m.x+'px;top:'+m.y+'px;width:'+m.w+'px;height:'+m.w*m.a+'px;transform:rotate('+m.r+'deg)'};pos();
@@ -359,9 +359,9 @@ let dip=null;const bin=$('#bin'),ip=$('#ip'),standalone=()=>matchMedia('(display
  IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=='MacIntel'&&navigator.maxTouchPoints>1);
 if(!standalone())bin.style.display='';
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();dip=e;if(!standalone())bin.style.display=''});
-addEventListener('appinstalled',()=>{dip=null;bin.style.display='none';ip.classList.remove('show');toast('Installed! Open Notebook from your apps')});
+addEventListener('appinstalled',()=>{dip=null;bin.style.display='none';ip.classList.remove('show');toast('Installed! Open NoteApp from your apps')});
 bin.onclick=async()=>{if(dip){ip.classList.remove('show');try{dip.prompt();await dip.userChoice}catch(e){}dip=null;return}
- const MOB=IOS||/Android/i.test(navigator.userAgent);ip.innerHTML=IOS?'To install: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.':MOB?'To install: open your browser menu (⋮ or ⋯) and choose <b>Install app</b> or <b>Add to Home screen</b>.':'To install: click the <b>install icon</b> at the right of the address bar (or browser menu → <b>Install Notebook</b>).';ip.classList.toggle('show')};
+ const MOB=IOS||/Android/i.test(navigator.userAgent);ip.innerHTML=IOS?'To install: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.':MOB?'To install: open your browser menu (⋮ or ⋯) and choose <b>Install app</b> or <b>Add to Home screen</b>.':'To install: click the <b>install icon</b> at the right of the address bar (or browser menu → <b>Install NoteApp</b>).';ip.classList.toggle('show')};
 document.addEventListener('click',e=>{if(!e.target.closest('#ip,#bin'))ip.classList.remove('show')});
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 showPn();

@@ -1,8 +1,8 @@
 {
-  "name": "Notebook",
-  "short_name": "Notebook",
+  "name": "NoteApp",
+  "short_name": "NoteApp",
   "description": "A pocket notebook: write, speak, draw with a Sharpie and share your pages.",
-  "id": "./",
+  "id": "noteapp",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
