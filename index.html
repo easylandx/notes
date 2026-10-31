@@ -188,7 +188,7 @@ ta.addEventListener('input',onType);ta.addEventListener('click',suggest);
 ta.addEventListener('keydown',e=>{if(e.key=='Tab'&&sug.firstChild){e.preventDefault();accept()}});
 
 /* share to WhatsApp as a picture of the page */
-$('#bsh').onclick=async()=>{try{await document.fonts.load("26px Caveat")}catch(e){}
+const mkBlob=async()=>{try{await document.fonts.load("26px Caveat")}catch(e){}
  const W=Math.max(320,paper.clientWidth),mw=W-58-18,g=document.createElement('canvas').getContext('2d');g.font="500 26px Caveat, cursive";
  const lines=[];(ta.value||'').split('\n').forEach(par=>{let l='';par.split(' ').forEach(w=>{const t=l?l+' '+w:w;if(g.measureText(t).width>mw&&l){lines.push(l);l=w}else l=t});lines.push(l)});
  let sy=0;strokes.forEach(s=>s.forEach(p=>sy=Math.max(sy,p[1]+30)));ims.forEach(m=>sy=Math.max(sy,m.y+m.w*m.a-64+24));
@@ -199,10 +199,16 @@ $('#bsh').onclick=async()=>{try{await document.fonts.load("26px Caveat")}catch(e
  for(const m of ims)await new Promise(r=>{const i=new Image();i.onload=()=>{x.save();x.translate(m.x+m.w/2,m.y+m.w*m.a/2);x.rotate(m.r*Math.PI/180);x.fillStyle='#fff';x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=6;x.fillRect(-m.w/2,-m.w*m.a/2,m.w,m.w*m.a);x.shadowColor='transparent';const bw=5,iw=m.w-2*bw,ih=m.w*m.a-2*bw,q=Math.max(iw/i.width,ih/i.height);x.beginPath();x.rect(-iw/2,-ih/2,iw,ih);x.clip();x.drawImage(i,-i.width*q/2,-i.height*q/2,i.width*q,i.height*q);x.restore();r()};i.onerror=r;i.src=m.d});
  x.drawImage(cv,0,64,cv.width/dpr(),cv.height/dpr());
  x.font="11px 'Special Elite',monospace";x.fillStyle='rgba(70,50,10,.65)';x.textAlign='center';x.fillText('Created with NotesApp · easylandx.github.io/notes/',W/2,H-12);
- const txt=(ta.value||'My notebook page').slice(0,900);
- c.toBlob(async b=>{const f=new File([b],'notebook-page.png',{type:'image/png'});
-  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:'Created with NotesApp\nhttps://easylandx.github.io/notes/'});return}}catch(e){if(e.name=='AbortError')return}
-  window.open('https://wa.me/?text='+encodeURIComponent(txt+'\n\nCreated with NotesApp\nhttps://easylandx.github.io/notes/'),'_blank');toast('Image sharing is not available here, sent the text to WhatsApp')},'image/png')};
+ return await new Promise(r=>c.toBlob(r,'image/png'))};
+const CR='Created with NotesApp\nhttps://easylandx.github.io/notes/';
+$('#bsh').onclick=async()=>{
+ const txt=(ta.value||'My notebook page').slice(0,900),DESK=!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)&&!matchMedia('(pointer:coarse)').matches&&!(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform));
+ if(DESK){/* desktop: open WhatsApp Web straight away, and try to put the page picture on the clipboard */
+  try{navigator.clipboard.write([new ClipboardItem({'image/png':mkBlob()})]).then(()=>toast('WhatsApp Web opened. Page image copied: press Ctrl+V to add it')).catch(()=>{})}catch(e){}
+  window.open('https://web.whatsapp.com/send?text='+encodeURIComponent(txt+'\n\n'+CR),'_blank');return}
+ const b=await mkBlob(),f=new File([b],'notebook-page.png',{type:'image/png'});
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:CR});return}}catch(e){if(e.name=='AbortError')return}
+ window.open('https://wa.me/?text='+encodeURIComponent(txt+'\n\n'+CR),'_blank');toast('Image sharing is not available here, sent the text to WhatsApp')};
 
 
 /* pages: swipe up/down to turn, swipe left-to-right to tear */
