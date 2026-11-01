@@ -112,6 +112,9 @@ html,body{background:#d2b843}
 #pj button.cur{background:#3b2f27;color:#f3e38a;box-shadow:inset 0 0 0 2px #f3e38a}
 .top .epx{margin-left:auto;margin-right:12px;padding:3px 11px;border:1px solid rgba(74,58,18,.45);border-radius:12px;background:rgba(74,58,18,.1);color:#4a3a12;text-decoration:none;font-size:11px;letter-spacing:.04em;text-transform:none}
 .top .epx:active{background:rgba(74,58,18,.25)}
+.top a.epx{margin-right:6px}
+.top .epx.lg{margin-left:0;cursor:pointer;-webkit-user-select:none;user-select:none}
+#bmode{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #fp{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding:6px 12px;background:var(--bar);flex:0 0 auto}
 #fp::-webkit-scrollbar{display:none}
 #fp.hide{display:none}
@@ -126,17 +129,16 @@ html,body{background:#d2b843}
   <div class="inside">
    <div class="pad" id="pad">
     <div class="paper" id="paper">
-     <div class="top"><span>NoteApp</span><a class="epx" href="https://easylandx.github.io/" target="_blank" rel="noopener">EasyPageX</a><span class="pn" id="pn">1</span></div>
+     <div class="top"><span>NoteApp</span><a class="epx" href="https://easylandx.github.io/" target="_blank" rel="noopener">EasyPageX</a><span class="epx lg" id="lgb" role="button" tabindex="0">Español</span><span class="pn" id="pn">1</span></div>
      <div id="ta" contenteditable="true" spellcheck="false" data-ph="Start writing, or tap Voice and speak…"></div>
      <div id="ph"></div>
      <canvas id="sk"></canvas>
     </div>
    </div>
-   <div id="fp" aria-label="Font"></div>
+   <div id="fp" class="hide" aria-label="Font"></div>
    <div class="sug" id="sug"></div>
    <div class="bar">
     <button id="bmode" class="on"><i>✎</i>Write</button>
-    <button id="bfont"><i>Aa</i>Font</button>
     <button id="bsharp"><i>🖊️</i>Sharpie</button>
     <button id="bmic"><i>🎙</i>Voice</button>
     <button id="bph"><i>📷</i>Photo</button>
@@ -168,11 +170,38 @@ const FONTS=[
 let fontK='inter';try{fontK=localStorage.getItem('moleskine:font')||'inter'}catch(e){}
 if(!FONTS.some(f=>f.k==fontK))fontK='inter';
 const FK=k=>FONTS.find(f=>f.k==k)||FONTS[0];
+
+/* interface language: English / Spanish (Spain) */
+const I18N={
+en:{write:'Write',sharpie:'Sharpie',voice:'Voice',photo:'Photo',erase:'Erase',sure:'Sure?',whatsapp:'WhatsApp',undo:'Undo',install:'Install',full:'Full',exit:'Exit',notes:'NOTES',
+ ph:'Start writing, or tap Voice and speak…',font:'Font',black:'Black',blue:'Blue',red:'Red',removePhoto:'Remove photo',placePhoto:'Place photo',autoUp:'Auto flip up',autoDown:'Auto flip down',
+ nothingUndo:'Nothing to undo',storageFull:'Storage is full: recent changes may not be saved',
+ writeOn:'Write on: tap Write again for fonts',sharpieOn:'Sharpie on: pick a colour and draw',writeOff:'Write off: swipe freely, tap Write to turn on',
+ noVoice:'Voice dictation is not supported by this browser. Use your iPhone keyboard microphone instead.',micBlocked:'Microphone blocked. Allow it in your browser settings.',micNone:'Microphone not available here. Try opening the page in its own tab.',
+ waWeb:'WhatsApp Web opened. Page image copied: press Ctrl+V to add it',waText:'Image sharing is not available here, sent the text to WhatsApp',erased:'NoteApp erased',
+ photoAdded:'Photo added: drag to move, corner to resize, ✓ to place',photoBad:'Could not read that photo',
+ autoStopped:'Auto flip stopped',autoNeed2:'Auto flip needs at least 2 pages',autoOn:'Auto flip on: tap the page to stop',
+ installed:'Installed! Open NoteApp from your apps',
+ insIOS:'To install: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.',insMob:'To install: open your browser menu (⋮ or ⋯) and choose <b>Install app</b> or <b>Add to Home screen</b>.',insDesk:'To install: click the <b>install icon</b> at the right of the address bar (or browser menu → <b>Install NoteApp</b>).',
+ noFull:'Full screen is not available here',credit:'Created with NotesApp'},
+es:{write:'Escribir',sharpie:'Rotulador',voice:'Voz',photo:'Foto',erase:'Borrar',sure:'¿Seguro?',whatsapp:'WhatsApp',undo:'Deshacer',install:'Instalar',full:'Completa',exit:'Salir',notes:'NOTAS',
+ ph:'Empieza a escribir o toca Voz y habla…',font:'Fuente',black:'Negro',blue:'Azul',red:'Rojo',removePhoto:'Quitar foto',placePhoto:'Colocar foto',autoUp:'Pasar páginas automáticamente hacia arriba',autoDown:'Pasar páginas automáticamente hacia abajo',
+ nothingUndo:'No hay nada que deshacer',storageFull:'Almacenamiento lleno: puede que los últimos cambios no se guarden',
+ writeOn:'Escribir activado: toca Escribir otra vez para ver las fuentes',sharpieOn:'Rotulador activado: elige un color y dibuja',writeOff:'Escritura desactivada: desliza con libertad, toca Escribir para activarla',
+ noVoice:'Este navegador no admite el dictado por voz. Usa el micrófono del teclado de tu iPhone.',micBlocked:'Micrófono bloqueado. Permítelo en los ajustes del navegador.',micNone:'El micrófono no está disponible aquí. Prueba a abrir la página en su propia pestaña.',
+ waWeb:'WhatsApp Web abierto. Imagen de la página copiada: pulsa Ctrl+V para añadirla',waText:'Aquí no se puede compartir la imagen; se ha enviado el texto a WhatsApp',erased:'Todo borrado',
+ photoAdded:'Foto añadida: arrástrala para moverla, usa la esquina para cambiar el tamaño y ✓ para colocarla',photoBad:'No se pudo leer esa foto',
+ autoStopped:'Paso automático de páginas detenido',autoNeed2:'El paso automático necesita al menos 2 páginas',autoOn:'Paso automático activado: toca la página para detenerlo',
+ installed:'¡Instalada! Abre NoteApp desde tus aplicaciones',
+ insIOS:'Para instalar: toca el botón <b>Compartir</b> de Safari y luego <b>Añadir a pantalla de inicio</b>.',insMob:'Para instalar: abre el menú del navegador (⋮ o ⋯) y elige <b>Instalar aplicación</b> o <b>Añadir a pantalla de inicio</b>.',insDesk:'Para instalar: haz clic en el <b>icono de instalar</b> a la derecha de la barra de direcciones (o menú del navegador → <b>Instalar NoteApp</b>).',
+ noFull:'La pantalla completa no está disponible aquí',credit:'Creado con NotesApp'}};
+let LANG=(()=>{try{const v=localStorage.getItem('moleskine:lang');if(v=='es'||v=='en')return v}catch(e){}return /^es/i.test(navigator.language||'')?'es':'en'})();
+const ui=k=>{const v=I18N[LANG][k];return v!=null?v:I18N.en[k]};
 const book=$('#book'),cover=$('#cover'),ta=$('#ta'),cv=$('#sk'),ctx=cv.getContext('2d'),pad=$('#pad'),paper=$('#paper'),sug=$('#sug');
 let strokes=[],mode='write',cur=null,last=null,cw=0,chh=0;
 
 /* editor: contenteditable with one font per character, so a new font only affects text typed from then on */
-let T='',FA=[],composing=false,sel0=[0,0],pickPos=-1;
+let T='',FA=[],composing=false,sel0=[0,0],pickPos=-1,fontStage=false;
 const toRuns=a=>{const r=[];a.forEach((k,i)=>{if(!i||k!==a[i-1])r.push([i,k])});return r};
 const fromRuns=(runs,n)=>{const a=new Array(n),rr=(runs&&runs.length)?runs:[[0,FONTS[0].k]];let k=rr[0][1],j=0;for(let i=0;i<n;i++){while(j<rr.length&&rr[j][0]<=i){k=rr[j][1];j++}a[i]=k}return a};
 const pgArr=pg=>fromRuns(pg.f,(pg.t||'').length);
@@ -223,11 +252,11 @@ function pushH(){const n=snap(),l=hist[hist.length-1];
   if(textOnly&&histTextOnly&&now-histT<900&&hist.length>1){hist[hist.length-1]=n;histT=now;return}
   histTextOnly=textOnly;histT=now}
  hist.push(n);if(hist.length>80)hist.shift()}
-function undo(){if(hist.length<2)return toast('Nothing to undo');
+function undo(){if(hist.length<2)return toast(ui('nothingUndo'));
  hist.pop();const p=hist[hist.length-1];histTextOnly=false;
  ta.setFA(p.t,fromRuns(p.f,p.t.length));strokes=p.s.map(s=>s.slice());ims=pages[idx].im=p.im.map(m=>({...m}));
  fit();redraw();renderPhotos();hideSug();save()}
-function save(){try{pages[idx]={t:ta.value,s:strokes,im:ims,f:toRuns(ta.fa)};pushH();localStorage.setItem('moleskine:v2',JSON.stringify({p:pages,i:idx}))}catch(e){toast('Storage is full: recent changes may not be saved')}}
+function save(){try{pages[idx]={t:ta.value,s:strokes,im:ims,f:toRuns(ta.fa)};pushH();localStorage.setItem('moleskine:v2',JSON.stringify({p:pages,i:idx}))}catch(e){toast(ui('storageFull'))}}
 let pages=[{t:'',s:[]}],idx=0,ims=[];try{const d=JSON.parse(localStorage.getItem('moleskine:v2')||'null'),o=JSON.parse(localStorage.getItem('moleskine:v1')||'null');if(d&&d.p&&d.p.length){pages=d.p;idx=Math.min(d.i||0,pages.length-1)}else if(o)pages=[{t:o.t||'',s:o.s||[]}]}catch(e){}ta.setFA(pages[idx].t,pgArr(pages[idx]));strokes=pages[idx].s;ims=pages[idx].im=pages[idx].im||[];
 
 /* cover and elastic band */
@@ -256,12 +285,15 @@ cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);const p=pt(e);cur=[p];str
 cv.onpointermove=e=>{if(!cur)return;const p=pt(e),a=cur[cur.length-1],sp=Math.hypot(p[0]-a[0],p[1]-a[1])/Math.max(1,p[2]-a[2]);p[3]=SH()?Math.max(4,Math.min(6.2,a[3]*.8+(6-sp*1.2)*.2)):Math.max(1.3,Math.min(3.4,a[3]*.7+(3.6-sp*2.4)*.3));seg(a,p);cur.push(p)};
 cv.onpointerup=cv.onpointercancel=cv.onlostpointercapture=()=>{if(cur){cur=null;save()}};
 let back='write';
-function setMode(m,p){if(m=='sketch'&&mode!='sketch')back=mode;mode=m;if(p)pen=p;const pd=paper.parentNode;
+function setMode(m,p){if(m=='sketch'&&mode!='sketch')back=mode;mode=m;fontStage=false;if(p)pen=p;const pd=paper.parentNode;
  pd.classList.toggle('sketching',m=='sketch');pd.classList.toggle('browsing',m=='browse');if(m!='write')ta.blur();
- $('#bsharp').classList.toggle('on',m=='sketch');$('#bmode').classList.toggle('on',m=='write');$('#sp').classList.toggle('show',m=='sketch');$('#fp').classList.toggle('hide',m!='write');queueFit();
- toast(m=='write'?'Write on: type with the keyboard':m=='sketch'?'Sharpie on: pick a colour and draw':'Write off: swipe freely')}
+ $('#bsharp').classList.toggle('on',m=='sketch');$('#bmode').classList.toggle('on',m=='write');$('#sp').classList.toggle('show',m=='sketch');if(m!='write')$('#fp').classList.add('hide');queueFit();
+ toast(m=='write'?ui('writeOn'):m=='sketch'?ui('sharpieOn'):ui('writeOff'))}
 function paintSel(){$('#bsharp').style.setProperty('--sc',shcol);$('#sp').querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.c==shcol))}
-$('#bmode').onclick=()=>{setMode(mode=='write'?'browse':'write')};
+/* Write button: tap = write on, tap again = fonts, tap again = write off, and so on */
+const bm=$('#bmode');
+bm.onclick=()=>{if(mode!='write'){setMode('write');return}
+ if(!fontStage){fontStage=true;fp.classList.remove('hide');queueFit()}else setMode('browse')};
 const fp=$('#fp');
 function markSel(){fp.querySelectorAll('button').forEach(b=>b.classList.toggle('sel',b.dataset.k==fontK))}
 FONTS.forEach(f=>{const b=document.createElement('button');b.textContent=f.n;b.dataset.k=f.k;b.style.fontFamily=f.f;fp.appendChild(b)});
@@ -269,10 +301,9 @@ fp.onclick=e=>{const b=e.target.closest('button');if(!b)return;fontK=b.dataset.k
  const r=readSel();let ch=false;
  if(r[0]!==r[1]){for(let i=r[0];i<r[1];i++)FA[i]=fontK;render();setSel(r[0],r[1]);ch=true}else pickPos=r[0];
  markSel();fp.classList.add('hide');queueFit();if(ch)onType();if(mode=='write')ta.focus()};
-$('#bfont').onclick=()=>{if(mode!='write')setMode('write');else{fp.classList.toggle('hide');queueFit()}};
 fp.onpointerdown=e=>e.preventDefault();
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{fit();redraw()});
-markSel();fp.classList.toggle('hide',mode!='write');
+markSel();fp.classList.add('hide');
 $('#bsharp').onclick=()=>{setMode(mode=='sketch'?back:'sketch','sharpie')};
 $('#sp').onclick=e=>{const b=e.target.closest('button');if(!b||!b.dataset.c)return;shcol=b.dataset.c;paintSel()};
 paintSel();
@@ -280,7 +311,7 @@ paintSel();
 /* voice memos written out in handwriting */
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,hearing=false,want=false,vlang='en-US',vbase='',vint=0;const PAUSE=1000;
 const vui=on=>{hearing=on;$('#bmic').classList.toggle('on',on);$('#bmic').classList.toggle('rec',on)};
-$('#bmic').onclick=()=>{if(!SR)return toast('Voice dictation is not supported by this browser. Use your iPhone keyboard microphone instead.');
+$('#bmic').onclick=()=>{if(!SR)return toast(ui('noVoice'));
  if(want||hearing){want=false;try{rec.stop()}catch(e){}return}
  lp.classList.toggle('show')};
 const lp=$('#lp');lp.onclick=e=>{const b=e.target.closest('button');if(b)startVoice(b.dataset.l)};
@@ -318,7 +349,7 @@ function beginVoice(first){
    else t+=nl?'\n'+up(x):' '+x}
   if(live)vint=n;
   t=post(t);ta.value=vbase+(t?lead+t:'');fit();if(autoFlip()){try{rec.abort()}catch(e){}return}if(pad.scrollHeight-pad.scrollTop-pad.clientHeight<160)pad.scrollTop=pad.scrollHeight};
- rec.onerror=e=>{if(e.error=='no-speech'||e.error=='aborted')return;want=false;toast(e.error=='not-allowed'||e.error=='service-not-allowed'?'Microphone blocked. Allow it in your browser settings.':'Microphone not available here. Try opening the page in its own tab.')};
+ rec.onerror=e=>{if(e.error=='no-speech'||e.error=='aborted')return;want=false;toast(e.error=='not-allowed'||e.error=='service-not-allowed'?ui('micBlocked'):ui('micNone'))};
  rec.onend=()=>{save();if(want&&!busyStart){busyStart=true;setTimeout(()=>{busyStart=false;if(want)try{beginVoice(false)}catch(e){want=false;vui(false)}},60)}else{vui(false);suggest()}};
  try{rec.start();vui(true)}catch(e){want=false;vui(false)}}
 let busyStart=false;
@@ -379,17 +410,17 @@ const mkBlob=async()=>{const T0=ta.value||'',A0=ta.fa.slice(),used=[...new Set(A
  x.fillStyle='#1f4fd8';x.font=fcss(FONTS[0].k);const fm=x.measureText('Hg'),fa=fm.fontBoundingBoxAscent,fd=fm.fontBoundingBoxDescent,by=fa?(32-(fa+fd))/2+fa:23;lines.forEach((l,i)=>{let cx=58;l.forEach(([tx,k])=>{x.font=fcss(k);x.fillText(tx,cx,64+by+i*32);cx+=x.measureText(tx).width})});
  for(const m of ims)await new Promise(r=>{const i=new Image();i.onload=()=>{x.save();x.translate(m.x+m.w/2,m.y+m.w*m.a/2);x.rotate(m.r*Math.PI/180);x.fillStyle='#fff';x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=6;x.fillRect(-m.w/2,-m.w*m.a/2,m.w,m.w*m.a);x.shadowColor='transparent';const bw=5,iw=m.w-2*bw,ih=m.w*m.a-2*bw,q=Math.max(iw/i.width,ih/i.height);x.beginPath();x.rect(-iw/2,-ih/2,iw,ih);x.clip();x.drawImage(i,-i.width*q/2,-i.height*q/2,i.width*q,i.height*q);x.restore();r()};i.onerror=r;i.src=m.d});
  x.drawImage(cv,0,64,cv.width/dpr(),cv.height/dpr());
- x.font="11px 'Special Elite',monospace";x.fillStyle='rgba(70,50,10,.65)';x.textAlign='center';x.fillText('Created with NotesApp · easylandx.github.io/notes/',W/2,H-12);
+ x.font="11px 'Special Elite',monospace";x.fillStyle='rgba(70,50,10,.65)';x.textAlign='center';x.fillText(ui('credit')+' · easylandx.github.io/notes/',W/2,H-12);
  return await new Promise(r=>c.toBlob(r,'image/png'))};
-const CR='Created with NotesApp\nhttps://easylandx.github.io/notes/';
+const CR=()=>ui('credit')+'\nhttps://easylandx.github.io/notes/';
 $('#bsh').onclick=async()=>{
  const txt=(ta.value||'My notebook page').slice(0,900),DESK=!/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)&&!matchMedia('(pointer:coarse)').matches&&!(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform));
  if(DESK){/* desktop: open WhatsApp Web straight away, and try to put the page picture on the clipboard */
-  try{navigator.clipboard.write([new ClipboardItem({'image/png':mkBlob()})]).then(()=>toast('WhatsApp Web opened. Page image copied: press Ctrl+V to add it')).catch(()=>{})}catch(e){}
-  window.open('https://web.whatsapp.com/send?text='+encodeURIComponent(txt+'\n\n'+CR),'_blank');return}
+  try{navigator.clipboard.write([new ClipboardItem({'image/png':mkBlob()})]).then(()=>toast(ui('waWeb'))).catch(()=>{})}catch(e){}
+  window.open('https://web.whatsapp.com/send?text='+encodeURIComponent(txt+'\n\n'+CR()),'_blank');return}
  const b=await mkBlob(),f=new File([b],'notebook-page.png',{type:'image/png'});
- try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:CR});return}}catch(e){if(e.name=='AbortError')return}
- window.open('https://wa.me/?text='+encodeURIComponent(txt+'\n\n'+CR),'_blank');toast('Image sharing is not available here, sent the text to WhatsApp')};
+ try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:CR()});return}}catch(e){if(e.name=='AbortError')return}
+ window.open('https://wa.me/?text='+encodeURIComponent(txt+'\n\n'+CR()),'_blank');toast(ui('waText'))};
 
 
 /* pages: swipe up/down to turn, swipe left-to-right to tear */
@@ -433,11 +464,11 @@ pad.addEventListener('wheel',e=>{if(mode=='sketch'||!book.classList.contains('op
  if(n-wb.t>300)wb={t:n,top:pad.scrollTop<=1,bot:pad.scrollTop+pad.clientHeight>=pad.scrollHeight-2,sum:0};wb.t=n;
  if((e.deltaY>0&&wb.bot)||(e.deltaY<0&&wb.top))wb.sum+=e.deltaY;
  if(Math.abs(wb.sum)>160){const d=wb.sum>0?1:-1;wb.sum=0;wb.top=wb.bot=0;go(d)}},{passive:true});
-let ec=0;$('#ber').onclick=()=>{const b=$('#ber');if(!ec){b.innerHTML='<i>❓</i>Sure?';ec=setTimeout(()=>{ec=0;b.innerHTML='<i>🗑</i>Erase'},3000);return}clearTimeout(ec);ec=0;b.innerHTML='<i>🗑</i>Erase';pages=[{t:'',s:[]}];load(0);toast('NoteApp erased')};
+let ec=0;$('#ber').onclick=()=>{const b=$('#ber');if(!ec){b.innerHTML='<i>❓</i>'+ui('sure');ec=setTimeout(()=>{ec=0;b.innerHTML='<i>🗑</i>'+ui('erase')},3000);return}clearTimeout(ec);ec=0;b.innerHTML='<i>🗑</i>'+ui('erase');pages=[{t:'',s:[]}];load(0);toast(ui('erased'))};
 /* photos */
 const ph=$('#ph'),fph=$('#fph');
 function renderPhotos(){ph.innerHTML='';ims.forEach(m=>{const d=document.createElement('div');d.className='ph'+(m.p===false?'':' placed');const pos=()=>{d.style.cssText='left:'+m.x+'px;top:'+m.y+'px;width:'+m.w+'px;height:'+m.w*m.a+'px;transform:rotate('+m.r+'deg)'};pos();
- const im=new Image();im.src=m.d;im.draggable=false;const x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','Remove photo');const rz=document.createElement('div');rz.className='rz';const ok=document.createElement('button');ok.className='ok';ok.textContent='✓';ok.setAttribute('aria-label','Place photo');d.append(im,x,rz,ok);
+ const im=new Image();im.src=m.d;im.draggable=false;const x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label',ui('removePhoto'));const rz=document.createElement('div');rz.className='rz';const ok=document.createElement('button');ok.className='ok';ok.textContent='✓';ok.setAttribute('aria-label',ui('placePhoto'));d.append(im,x,rz,ok);
  d.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});let g=null;
  d.onpointerdown=e=>{if(e.target==x||e.target==ok)return;d.setPointerCapture(e.pointerId);g={k:m.p===false?(e.target==rz?'r':'m'):'t',x:e.clientX,y:e.clientY,mx:m.x,my:m.y,mw:m.w};e.stopPropagation()};
  d.onpointermove=e=>{if(!g)return;const dx=e.clientX-g.x,dy=e.clientY-g.y;if(g.k=='t'){if(Math.abs(dx)+Math.abs(dy)>6)g.moved=1;return}if(g.k=='m'){m.x=Math.max(-m.w*.5,Math.min(paper.clientWidth-m.w*.5,g.mx+dx));m.y=Math.max(0,g.my+dy)}else m.w=Math.max(70,Math.min(paper.clientWidth,g.mw+dx));pos()};
@@ -447,26 +478,26 @@ function renderPhotos(){ph.innerHTML='';ims.forEach(m=>{const d=document.createE
 $('#bph').onclick=()=>fph.click();
 fph.onchange=()=>{const f=fph.files[0];fph.value='';if(!f)return;const u=URL.createObjectURL(f),im=new Image();
  im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
-  const w=Math.min(260,paper.clientWidth*.62);ims.push({d:c.toDataURL('image/jpeg',.78),x:Math.round((paper.clientWidth-w)/2+Math.random()*30-15),y:Math.round(pad.scrollTop+110),w:Math.round(w),a:c.height/c.width,r:+(Math.random()*5-2.5).toFixed(1),p:false});renderPhotos();save();toast('Photo added: drag to move, corner to resize, ✓ to place')};
- im.onerror=()=>{URL.revokeObjectURL(u);toast('Could not read that photo')};im.src=u};
+  const w=Math.min(260,paper.clientWidth*.62);ims.push({d:c.toDataURL('image/jpeg',.78),x:Math.round((paper.clientWidth-w)/2+Math.random()*30-15),y:Math.round(pad.scrollTop+110),w:Math.round(w),a:c.height/c.width,r:+(Math.random()*5-2.5).toFixed(1),p:false});renderPhotos();save();toast(ui('photoAdded'))};
+ im.onerror=()=>{URL.revokeObjectURL(u);toast(ui('photoBad'))};im.src=u};
 renderPhotos();
 /* page chooser: tap the page count */
 /* auto flip: forward to the last page, then back to the first, and so on until stopped */
 let auto=false,autoT=null,autoDir=1,autoCover=false;
-function autoStop(say){auto=false;autoCover=false;clearTimeout(autoT);autoT=null;if(say)toast('Auto flip stopped')}
+function autoStop(say){auto=false;autoCover=false;clearTimeout(autoT);autoT=null;if(say)toast(ui('autoStopped'))}
 function autoStep(){if(!auto)return;
  if(!book.classList.contains('open')){if(autoCover){autoCover=false;autoDir=1;openBook();autoT=setTimeout(autoStep,1400);return}autoStop();return}
  if(busy){autoT=setTimeout(autoStep,200);return}
- if(pages.length<2){autoStop();toast('Auto flip needs at least 2 pages');return}
+ if(pages.length<2){autoStop();toast(ui('autoNeed2'));return}
  if(autoDir<0&&idx<=0){autoCover=true;closeBook();autoT=setTimeout(autoStep,2000);return}
  if(autoDir>0&&idx>=pages.length-1)autoDir=-1;
  go(autoDir);autoT=setTimeout(autoStep,2000)}
-function autoStart(d){if(pages.length<2)return toast('Auto flip needs at least 2 pages');
- auto=true;autoDir=d||1;ta.blur();toast('Auto flip on: tap the page to stop');autoStep()}
+function autoStart(d){if(pages.length<2)return toast(ui('autoNeed2'));
+ auto=true;autoDir=d||1;ta.blur();toast(ui('autoOn'));autoStep()}
 pad.addEventListener('pointerdown',()=>{if(auto)autoStop(true)},true);
 cover.addEventListener('pointerdown',()=>{if(auto)autoStop(true)},true);
 const pj=$('#pj');
-function openPj(){pj.innerHTML='';const ar=document.createElement('div');ar.className='autorow';[['up','▲',-1],['down','▼',1]].forEach(([n,t,d])=>{const ab=document.createElement('button');ab.className='auto'+(auto&&autoDir==d?' on':'');ab.dataset.auto=n;ab.textContent=t;ab.setAttribute('aria-label',n=='up'?'Auto flip up':'Auto flip down');ar.appendChild(ab)});pj.appendChild(ar);pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=i+1;b.dataset.i=i;if(i==idx)b.className='cur';pj.appendChild(b)});pj.classList.add('show');const c=pj.querySelector('.cur');if(c)c.scrollIntoView({block:'center'})}
+function openPj(){pj.innerHTML='';const ar=document.createElement('div');ar.className='autorow';[['up','▲',-1],['down','▼',1]].forEach(([n,t,d])=>{const ab=document.createElement('button');ab.className='auto'+(auto&&autoDir==d?' on':'');ab.dataset.auto=n;ab.textContent=t;ab.setAttribute('aria-label',n=='up'?ui('autoUp'):ui('autoDown'));ar.appendChild(ab)});pj.appendChild(ar);pages.forEach((p,i)=>{const b=document.createElement('button');b.textContent=i+1;b.dataset.i=i;if(i==idx)b.className='cur';pj.appendChild(b)});pj.classList.add('show');const c=pj.querySelector('.cur');if(c)c.scrollIntoView({block:'center'})}
 $('#pn').onclick=e=>{e.stopPropagation();if(busy)return;pj.classList.contains('show')?pj.classList.remove('show'):openPj()};
 pj.onclick=e=>{const b=e.target.closest('button');if(!b)return;pj.classList.remove('show');if(b.dataset.auto){const d=b.dataset.auto=='up'?-1:1;if(auto&&autoDir==d)autoStop(true);else{if(auto)autoStop();autoStart(d)}return}if(auto)autoStop(true);const j=+b.dataset.i;if(j==idx||busy)return;if(j==idx+1)go(1);else if(j==idx-1)go(-1);else{save();load(j)}};
 document.addEventListener('click',e=>{if(!e.target.closest('#pj,#pn'))pj.classList.remove('show')});
@@ -475,18 +506,30 @@ let dip=window.__dip;const bin=$('#bin'),ip=$('#ip'),standalone=()=>matchMedia('
  IOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform=='MacIntel'&&navigator.maxTouchPoints>1);
 if(!standalone()&&(IOS||dip))bin.style.display='';
 window.__onDip=e=>{dip=e;if(!standalone())bin.style.display=''};
-addEventListener('appinstalled',()=>{dip=null;bin.style.display='none';ip.classList.remove('show');toast('Installed! Open NoteApp from your apps')});
+addEventListener('appinstalled',()=>{dip=null;bin.style.display='none';ip.classList.remove('show');toast(ui('installed'))});
 bin.onclick=async()=>{if(dip){ip.classList.remove('show');const d=dip;dip=null;window.__dip=null;bin.style.display='none';try{d.prompt();await d.userChoice}catch(e){}return}
  if(!IOS)return;
- const MOB=IOS||/Android/i.test(navigator.userAgent);ip.innerHTML=IOS?'To install: tap the <b>Share</b> button in Safari, then <b>Add to Home Screen</b>.':MOB?'To install: open your browser menu (⋮ or ⋯) and choose <b>Install app</b> or <b>Add to Home screen</b>.':'To install: click the <b>install icon</b> at the right of the address bar (or browser menu → <b>Install NoteApp</b>).';ip.classList.toggle('show')};
+ const MOB=IOS||/Android/i.test(navigator.userAgent);ip.innerHTML=IOS?ui('insIOS'):MOB?ui('insMob'):ui('insDesk');ip.classList.toggle('show')};
 document.addEventListener('click',e=>{if(!e.target.closest('#ip,#bin'))ip.classList.remove('show')});
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{})});
 showPn();
 const FS=document.documentElement,fsOn=()=>document.fullscreenElement||document.webkitFullscreenElement;
 if((document.fullscreenEnabled||document.webkitFullscreenEnabled)&&FS.requestFullscreen||FS.webkitRequestFullscreen&&document.webkitFullscreenEnabled){const b=$('#bfs');b.style.display='';
- b.onclick=()=>{try{fsOn()?(document.exitFullscreen||document.webkitExitFullscreen).call(document):(FS.requestFullscreen||FS.webkitRequestFullscreen).call(FS)}catch(e){toast('Full screen is not available here')}};
- const u=()=>{b.innerHTML=fsOn()?'<i>⛶</i>Exit':'<i>⛶</i>Full';b.classList.toggle('on',!!fsOn());queueFit()};
+ b.onclick=()=>{try{fsOn()?(document.exitFullscreen||document.webkitExitFullscreen).call(document):(FS.requestFullscreen||FS.webkitRequestFullscreen).call(FS)}catch(e){toast(ui('noFull'))}};
+ const u=()=>{b.innerHTML=fsOn()?'<i>⛶</i>'+ui('exit'):'<i>⛶</i>'+ui('full');b.classList.toggle('on',!!fsOn());queueFit()};window.__fsU=u;
  document.addEventListener('fullscreenchange',u);document.addEventListener('webkitfullscreenchange',u)}
+const BTN={bmode:['✎','write'],bsharp:['🖊️','sharpie'],bmic:['🎙','voice'],bph:['📷','photo'],bsh:['📤','whatsapp'],bun:['↩','undo'],bin:['📲','install']};
+function applyLang(){document.documentElement.lang=LANG;
+ for(const id in BTN)$('#'+id).innerHTML='<i>'+BTN[id][0]+'</i>'+ui(BTN[id][1]);
+ $('#ber').innerHTML=ec?'<i>❓</i>'+ui('sure'):'<i>🗑</i>'+ui('erase');
+ $('#cover b').textContent=ui('notes');ta.dataset.ph=ui('ph');fp.setAttribute('aria-label',ui('font'));
+ const cn={'#111111':'black','#1f4fd8':'blue','#d62828':'red'};$('#sp').querySelectorAll('button[data-c]').forEach(b=>{if(cn[b.dataset.c])b.setAttribute('aria-label',ui(cn[b.dataset.c]))});
+ $('#lgb').textContent=LANG=='es'?'English':'Español';
+ if(window.__fsU)window.__fsU();
+ if(pj.classList.contains('show'))openPj()}
+$('#lgb').onclick=e=>{e.stopPropagation();LANG=LANG=='es'?'en':'es';try{localStorage.setItem('moleskine:lang',LANG)}catch(x){}applyLang()};
+$('#lgb').onkeydown=e=>{if(e.key=='Enter'||e.key==' '){e.preventDefault();$('#lgb').click()}};
+applyLang();
 fit();setTimeout(fit,300);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(queueFit);
 </script>
 </body>
