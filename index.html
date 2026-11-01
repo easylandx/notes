@@ -349,11 +349,19 @@ function beginVoice(first){
    if(lead===null){lead=nl?(!vbase.trim()||/\n\s*$/.test(vbase)?'':'\n'):sep;t=(nl||cap)?up(x):x}
    else t+=nl?'\n'+up(x):' '+x}
   if(live)vint=n;
-  t=post(t);ta.value=vbase+(t?lead+t:'');fit();if(autoFlip()){try{rec.abort()}catch(e){}return}if(pad.scrollHeight-pad.scrollTop-pad.clientHeight<160)pad.scrollTop=pad.scrollHeight};
+  t=post(t);ta.value=vbase+(t?lead+t:'');fit();vdoodle(false);if(autoFlip()){try{rec.abort()}catch(e){}return}if(pad.scrollHeight-pad.scrollTop-pad.clientHeight<160)pad.scrollTop=pad.scrollHeight};
  rec.onerror=e=>{if(e.error=='no-speech'||e.error=='aborted')return;want=false;toast(e.error=='not-allowed'||e.error=='service-not-allowed'?ui('micBlocked'):ui('micNone'))};
- rec.onend=()=>{save();if(want&&!busyStart){busyStart=true;setTimeout(()=>{busyStart=false;if(want)try{beginVoice(false)}catch(e){want=false;vui(false)}},60)}else{vui(false);suggest()}};
+ rec.onend=()=>{save();if(!want)vdoodle(true);if(want&&!busyStart){busyStart=true;setTimeout(()=>{busyStart=false;if(want)try{beginVoice(false)}catch(e){want=false;vui(false)}},60)}else{vui(false);suggest()}};
  try{rec.start();vui(true)}catch(e){want=false;vui(false)}}
 let busyStart=false;
+/* doodles while dictating: each line the voice finishes (pause, spoken new line, or stop) gets its doodle, like pressing Enter */
+const vdone=new Set();
+function vdoodle(all){if(!doodleOn)return;const ends=[];
+ for(let i=T.indexOf('\n',vbase.length);i>=0;i=T.indexOf('\n',i+1))ends.push(i);
+ if(all&&T.length>vbase.length&&!/\n$/.test(T))ends.push(T.length);
+ ends.forEach(end=>{const ls=T.lastIndexOf('\n',end-1)+1,txt=T.slice(ls,end),key=ls+':'+txt;
+  if(txt.trim().length<2||vdone.has(key))return;vdone.add(key);
+  setTimeout(()=>{if(doodleOn&&T.slice(ls,end)===txt)doodleAt(txt,end);else vdone.delete(key)},120)})}
 
 /* predictive sentence completion (on-device, learns from your own writing) */
 const seed="i need to remember to call the doctor tomorrow morning and buy some milk from the store today i want to finish the project and send it to the team thank you for your help and have a great day let me know if you have any questions about the meeting i am going to the market to buy fresh bread and vegetables for dinner the idea is to make something simple that people really love to use it was a quiet evening and the rain kept falling on the window we should plan the trip for next weekend with all our friends";
