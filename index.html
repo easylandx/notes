@@ -141,6 +141,7 @@ html,body{background:#d2b843}
     <button id="bmode" class="on"><i>✎</i>Write</button>
     <button id="bsharp"><i>🖊️</i>Sharpie</button>
     <button id="bmic"><i>🎙</i>Voice</button>
+    <button id="bdood"><i>🖍️</i>Doodle</button>
     <button id="bph"><i>📷</i>Photo</button>
     <button id="ber"><i>🗑</i>Erase</button>
     <button id="bsh"><i>📤</i>WhatsApp</button>
@@ -233,7 +234,7 @@ const _focus=ta.focus.bind(ta);
 ta.focus=()=>{_focus();const s=getSelection();if(!(s.rangeCount&&s.anchorNode&&ta.contains(s.anchorNode)))setSel(sel0[0],sel0[1])};
 try{ta.contentEditable='plaintext-only';if(ta.contentEditable!=='plaintext-only')ta.contentEditable='true'}catch(e){ta.contentEditable='true'}
 ta.addEventListener('beforeinput',e=>{const t=e.inputType;
- if(t=='insertParagraph'||t=='insertLineBreak'){e.preventDefault();const r=readSel();insertAt(r[0],r[1],'\n');onType()}
+ if(t=='insertParagraph'||t=='insertLineBreak'){e.preventDefault();const r=readSel();insertAt(r[0],r[1],'\n');onType();if(doodleOn)doodleLine(r[0])}
  else if(t=='historyUndo'||t=='historyRedo'||t=='insertFromDrop')e.preventDefault()});
 ta.addEventListener('paste',e=>{e.preventDefault();const x=((e.clipboardData||window.clipboardData).getData('text/plain')||'').replace(/\r\n?/g,'\n'),r=readSel();if(x){insertAt(r[0],r[1],x);onType()}});
 ta.addEventListener('compositionstart',()=>{composing=true});
@@ -518,7 +519,94 @@ if((document.fullscreenEnabled||document.webkitFullscreenEnabled)&&FS.requestFul
  b.onclick=()=>{try{fsOn()?(document.exitFullscreen||document.webkitExitFullscreen).call(document):(FS.requestFullscreen||FS.webkitRequestFullscreen).call(FS)}catch(e){toast(ui('noFull'))}};
  const u=()=>{b.innerHTML=fsOn()?'<i>⛶</i>'+ui('exit'):'<i>⛶</i>'+ui('full');b.classList.toggle('on',!!fsOn());queueFit()};window.__fsU=u;
  document.addEventListener('fullscreenchange',u);document.addEventListener('webkitfullscreenchange',u)}
-const BTN={bmode:['✎','write'],bsharp:['🖊️','sharpie'],bmic:['🎙','voice'],bph:['📷','photo'],bsh:['📤','whatsapp'],bun:['↩','undo'],bin:['📲','install']};
+
+/* doodle: a quick sharpie drawing beside each finished line (or the selected word) */
+I18N.en.doodle='Doodle';I18N.es.doodle='Dibujo';
+let doodleOn=false;try{doodleOn=localStorage.getItem('moleskine:doodle')=='1'}catch(e){}
+const DCOL=['#111111','#1f4fd8','#d62828','#2a9d3f','#7b2cbf','#f77f00','#0a9396','#e5238c'];
+const DI={
+sun:['sun sunny sunshine summer sol soleado verano','c50,50,15;p50,12 50,24;p50,76 50,88;p12,50 24,50;p76,50 88,50;p23,23 31,31;p69,69 77,77;p77,23 69,31;p31,69 23,77'],
+heart:['heart love corazon amor querer quiero amo','B50,86 22,58 16,36 30,24 44,28 50,40 56,28 70,24 84,36 78,58'],
+house:['house home casa hogar','p18,48 50,18 82,48;p26,44 26,82 74,82 74,44;P42,82 42,60 58,60 58,82'],
+tree:['tree forest wood arbol bosque','B50,10 70,18 80,36 68,54 50,58 32,54 20,36 30,18;p46,58 46,90;p54,58 54,90'],
+flower:['flower flowers rose garden flor flores rosa jardin','c50,38,7;c50,18,10;c70,38,10;c50,58,10;c30,38,10;p50,66 50,92;b50,80 64,70 76,74 64,84 50,82'],
+star:['star stars estrella estrellas','P50,10 61,38 90,38 66,56 76,86 50,68 24,86 34,56 10,38 39,38'],
+moon:['moon night luna noche','a50,50,34,50,310;b72,76 56,64 52,50 56,36 72,24'],
+cloud:['cloud cloudy nube nublado','B22,66 14,56 20,44 32,42 38,30 54,26 66,36 72,44 86,46 90,58 82,66'],
+rain:['rain rainy storm lluvia llover lluvioso tormenta','B22,52 14,42 20,30 32,28 38,16 54,12 66,22 72,30 86,32 90,44 82,52;p36,64 32,80;p52,64 48,80;p68,64 64,80'],
+cat:['cat kitten gato gata gatito','o50,58,28,22;p24,44 22,14 42,34;p76,44 78,14 58,34;c40,54,2.5;c60,54,2.5;p47,62 53,62 50,66 47,62;p12,58 34,62;p12,70 34,67;p88,58 66,62;p88,70 66,67'],
+dog:['dog puppy perro perra cachorro','o50,56,24,22;b30,38 14,40 12,62 26,64;b70,38 86,40 88,62 74,64;c41,52,2.5;c59,52,2.5;c50,63,4;b50,67 50,73 43,76;b50,73 57,76'],
+fish:['fish fishing pez pescado pescar','B30,34 56,34 76,50 56,66 30,66 22,50;P76,50 92,34 92,66;c38,47,2.5'],
+bird:['bird birds pajaro ave','o46,54,24,16;c74,40,10;p83,40 93,44 83,47;p24,50 8,40;p22,58 8,60;c76,38,2;p42,70 42,86;p54,70 54,86'],
+car:['car drive driving coche carro auto conducir','p10,64 10,50 28,46 38,30 64,30 76,46 92,50 92,64 10,64;c28,68,9;c72,68,9;p40,34 36,46 70,46 62,34'],
+bike:['bike bicycle cycling bici bicicleta','c24,64,18;c76,64,18;p24,64 40,40 66,40 76,64;p50,64 66,40;p66,40 62,28 74,26;p34,36 46,36;p40,40 50,64 24,64'],
+plane:['plane airplane flight travel fly avion vuelo viaje volar','P10,52 40,48 56,14 66,14 58,48 86,44 92,50 86,56 58,54 66,86 56,86 40,54 10,56'],
+book:['book read reading study school libro leer estudiar escuela','p14,26 50,34 86,26 86,74 50,82 14,74 14,26;p50,34 50,82;p24,42 40,46;p24,54 40,58'],
+coffee:['coffee tea cafe te breakfast desayuno','p24,36 28,70 38,80 54,80 64,70 68,36;p24,36 68,36;b68,44 82,44 82,62 66,62;b36,26 32,18 38,12;b52,26 48,18 54,12'],
+phone:['phone call mobile movil telefono llamar llamada','P34,10 66,10 66,90 34,90;p34,22 66,22;p34,78 66,78;c50,84,2'],
+music:['music song sing musica cancion cantar','c32,74,10;c70,64,10;p42,74 42,22 80,12 80,64;p42,36 80,26'],
+pizza:['pizza food dinner lunch eat comida cena almuerzo comer','P50,90 12,26 88,26;b12,26 50,14 88,26;c44,42,5;c62,40,5;c52,62,5'],
+apple:['apple fruit manzana fruta','B50,30 34,24 18,38 20,62 34,82 50,78 66,82 80,62 82,38 66,24;p50,30 52,14;b52,18 66,10 74,16 62,22'],
+cake:['cake birthday party cumple cumpleanos tarta pastel fiesta','P20,50 20,84 80,84 80,50;b20,50 30,58 40,50 50,58 60,50 70,58 80,50;p36,50 36,32;p50,50 50,32;p64,50 64,32;c36,27,3;c50,27,3;c64,27,3'],
+gift:['gift present regalo','P18,44 82,44 82,84 18,84;P14,32 86,32 86,44 14,44;p50,32 50,84;b50,32 36,14 28,26 50,32;b50,32 64,14 72,26 50,32'],
+clock:['clock time hour reloj tiempo hora','c50,50,36;p50,50 50,26;p50,50 68,58'],
+money:['money pay cash dollar euro dinero pagar','c50,50,34;b64,36 50,29 38,40 50,50 62,60 52,72 36,64;p50,22 50,80'],
+idea:['idea ideas think pensar','B50,10 70,18 76,40 64,58 62,68 38,68 36,58 24,40 30,18;p40,77 60,77;p43,86 57,86;p50,0 50,5'],
+smile:['happy smile glad feliz sonrisa contento alegre','c50,50,36;c38,42,3.5;c62,42,3.5;b30,58 42,72 58,72 70,58'],
+sad:['sad cry unhappy triste llorar','c50,50,36;c38,42,3.5;c62,42,3.5;b32,72 42,60 58,60 68,72'],
+camera:['camera photo picture camara foto fotografia','P12,34 88,34 88,80 12,80;p34,34 40,22 60,22 66,34;c50,57,14'],
+mountain:['mountain hike hiking montana monte','p8,82 36,34 52,58 64,42 92,82 8,82;p30,46 36,34 42,46'],
+wave:['sea ocean beach wave mar playa ola oceano','b6,36 20,26 34,36 48,26 62,36 76,26 94,36;b6,54 20,44 34,54 48,44 62,54 76,44 94,54;b6,72 20,62 34,72 48,62 62,72 76,62 94,72'],
+rocket:['rocket space launch cohete espacio','B50,8 64,30 64,66 36,66 36,30;c50,38,6;p36,52 22,72 36,66;p64,52 78,72 64,66;b42,70 50,92 58,70'],
+umbrella:['umbrella paraguas','a50,50,38,180,360;p12,50 88,50;p50,50 50,82;b50,82 50,90 38,90 36,82'],
+ball:['ball soccer football futbol pelota balon sport deporte','c50,50,34;P50,38 62,46 57,60 43,60 38,46;p50,38 50,16;p62,46 82,40;p57,60 68,78;p43,60 32,78;p38,46 18,40'],
+gym:['gym workout weights fitness strength gimnasio pesas entrenar entreno fuerza','p26,50 74,50;P18,34 28,34 28,66 18,66;P72,34 82,34 82,66 72,66;p10,42 10,58;p90,42 90,58'],
+laptop:['computer laptop work office code coding ordenador portatil trabajo oficina','P20,24 80,24 80,60 20,60;p20,60 8,74 92,74 80,60'],
+mail:['mail email letter message correo carta mensaje','P12,26 88,26 88,74 12,74;p12,26 50,54 88,26'],
+pen:['write writing pen note notes escribir boligrafo nota notas','P20,80 24,64 70,18 82,30 36,76;p62,26 74,38'],
+person:['person people friend friends family persona gente amigo amiga amigos familia','c50,26,14;b24,88 26,58 38,50 62,50 74,58 76,88'],
+fire:['fire hot burn fuego caliente','B50,8 62,30 78,52 72,78 50,90 28,78 22,52 36,36 42,50'],
+drop:['drop water gota agua','B50,10 64,38 74,60 64,80 50,88 36,80 26,60 36,38'],
+bed:['sleep bed sleepy tired dormir cama sueno cansado','p10,70 90,70;p10,48 10,76;p90,70 90,76;P10,56 50,56 50,70;p62,22 78,22 62,38 78,38'],
+snow:['snow cold winter nieve frio invierno','p50,10 50,90;p14,30 86,70;p14,70 86,30']};
+const DK={};for(const k in DI)DI[k][0].split(' ').forEach(w=>DK[w]=k);
+const DGEN=['star','heart','smile','idea','cloud'];
+const dnorm=w=>w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zñ]/g,'');
+const dfind=w=>{w=dnorm(w);return DK[w]||DK[w.replace(/(es|s)$/,'')]||DK[w.replace(/s$/,'')]||null};
+const DR=(a,b)=>a+Math.random()*(b-a);
+function dbuild(key,ox,oy,sz,col){const k=sz/100,out=[],ph=DR(0,6),sc=DR(.94,1.06);
+ const W=(x,y,i)=>{const w=Math.sin(ph+i*.13)*.9+Math.sin(ph*2+i*.31)*.5;return[ox+(x-50)*k*sc+50*k+w*k,oy+(y-50)*k*sc+50*k+Math.cos(ph+i*.11)*.8*k]};
+ const rs=p=>{const r=[];for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i],n=Math.max(1,Math.ceil(Math.hypot(b[0]-a[0],b[1]-a[1])/2));for(let j=(i==1?0:1);j<=n;j++)r.push([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n])}return r};
+ const cr=(p,cl)=>{const r=[],n=p.length,g=i=>cl?p[(i+n)%n]:p[Math.max(0,Math.min(n-1,i))];for(let i=0;i<(cl?n:n-1);i++){const a=g(i-1),b=g(i),c=g(i+1),d=g(i+2);for(let t=0;t<1;t+=.1){const t2=t*t,t3=t2*t;r.push([.5*(2*b[0]+(-a[0]+c[0])*t+(2*a[0]-5*b[0]+4*c[0]-d[0])*t2+(-a[0]+3*b[0]-3*c[0]+d[0])*t3),.5*(2*b[1]+(-a[1]+c[1])*t+(2*a[1]-5*b[1]+4*c[1]-d[1])*t2+(-a[1]+3*b[1]-3*c[1]+d[1])*t3)])}}if(cl)r.push(r[0]);else r.push(p[n-1]);return r};
+ const arc=(cx,cy,rx,ry,a0,a1)=>{const r=[],n=Math.max(8,Math.ceil(Math.abs(a1-a0)/9));for(let i=0;i<=n;i++){const a=(a0+(a1-a0)*i/n)*Math.PI/180;r.push([cx+rx*Math.cos(a),cy+ry*Math.sin(a)])}return r};
+ DI[key][1].split(';').forEach(c=>{const t=c[0],v=c.slice(1).match(/-?\d+\.?\d*/g).map(Number),pp=[];for(let i=0;i+1<v.length&&(t!='c'&&t!='o'&&t!='a');i+=2)pp.push([v[i],v[i+1]]);
+  let pts;if(t=='p')pts=rs(pp);else if(t=='P'){pp.push(pp[0]);pts=rs(pp)}else if(t=='b')pts=cr(pp,false);else if(t=='B')pts=cr(pp,true);
+  else if(t=='c'){const a=DR(0,360);pts=arc(v[0],v[1],v[2],v[2],a,a+372)}else if(t=='o'){const a=DR(0,360);pts=arc(v[0],v[1],v[2],v[3],a,a+372)}else pts=arc(v[0],v[1],v[2],v[2],v[3],v[4]);
+  out.push(pts.map((q,i)=>{const m=W(q[0],q[1],i);return[m[0],m[1],0,Math.max(2.6,Math.min(4.4,3.4+Math.sin(ph+i*.2)*.5)),col]}))});
+ return out}
+function dlineY(end){/* rect of the character just before offset `end`, relative to the canvas */
+ const n=nodeAt(end-1),m=nodeAt(end);if(!n[0]||n[0].nodeType!=3)return null;const r=document.createRange();r.setStart(n[0],Math.max(0,n[1]));r.setEnd(m[0].nodeType==3?m[0]:n[0],m[0].nodeType==3?m[1]:n[0].data.length);
+ const rc=[...r.getClientRects()].pop();if(!rc)return null;const c=cv.getBoundingClientRect();return{cy:rc.top-c.top+rc.height/2,right:rc.right-c.left}}
+function dword(txt){const w=txt.match(/[A-Za-zÀ-ÿñÑ]+/g)||[];for(let i=w.length-1;i>=0;i--){const k=dfind(w[i]);if(k)return{k,w:w[i]}}return{k:null,w:w[w.length-1]||''}}
+function doodleAt(txt,lineEnd){const f=dword(txt);let k=f.k;if(!k)k=DGEN[Math.floor(Math.random()*DGEN.length)];
+ const p=dlineY(lineEnd);if(!p)return;const sz=46,col=DCOL[Math.floor(Math.random()*DCOL.length)],w=paper.clientWidth;
+ const x=w-sz-8;const y=p.cy-sz/2+DR(-2,2);
+ if(!f.k&&f.w)toast(LANG=='es'?'Sin dibujo para «'+f.w+'»: selecciona otra palabra y pulsa Dibujo':'No doodle for “'+f.w+'”: select another word and tap Doodle');
+ dsketch(dbuild(k,x,y,sz,col))}
+function dsketch(list){const S=strokes;let si=0,pi=0,cur=null;const tot=list.reduce((a,b)=>a+b.length,0),per=Math.max(2,Math.ceil(tot/50));
+ (function step(){let n=per;while(n-->0&&si<list.length){const L=list[si];if(pi==0){cur=[L[0]];S.push(cur);pi=1;if(S===strokes){setup();seg(L[0],[L[0][0]+.1,L[0][1],0,L[0][3],L[0][4]])}}
+  else{const a=cur[cur.length-1],q=L[pi];cur.push(q);if(S===strokes)seg(a,q);pi++}if(pi>=L.length){si++;pi=0}}
+  if(si<list.length)requestAnimationFrame(step);else save()})()}
+function doodleLine(caret){const ls=T.lastIndexOf('\n',caret-1)+1,txt=T.slice(ls,caret);if(txt.trim().length<2)return;setTimeout(()=>{if(doodleOn)doodleAt(txt,caret)},80)}
+const bd=$('#bdood');
+function doodleUI(){bd.classList.toggle('on',doodleOn)}
+bd.onpointerdown=e=>e.preventDefault();
+bd.onclick=()=>{const r=readSel(),txt=T.slice(r[0],r[1]);
+ if(r[0]!==r[1]&&txt.trim()){if(!doodleOn){doodleOn=true;try{localStorage.setItem('moleskine:doodle','1')}catch(x){}}doodleUI();let le=T.indexOf('\n',r[1]);if(le<0)le=T.length;if(le>0)doodleAt(txt,le);return}
+ doodleOn=!doodleOn;try{localStorage.setItem('moleskine:doodle',doodleOn?'1':'0')}catch(x){}doodleUI();
+ toast(doodleOn?(LANG=='es'?'Dibujo activado: escribe una línea y pulsa Intro (o selecciona una palabra)':'Doodle on: write a line and press Enter (or select a word)'):(LANG=='es'?'Dibujo desactivado':'Doodle off'))};
+doodleUI();
+const BTN={bmode:['✎','write'],bsharp:['🖊️','sharpie'],bmic:['🎙','voice'],bdood:['🖍️','doodle'],bph:['📷','photo'],bsh:['📤','whatsapp'],bun:['↩','undo'],bin:['📲','install']};
 function applyLang(){document.documentElement.lang=LANG;
  for(const id in BTN)$('#'+id).innerHTML='<i>'+BTN[id][0]+'</i>'+ui(BTN[id][1]);
  $('#ber').innerHTML=ec?'<i>❓</i>'+ui('sure'):'<i>🗑</i>'+ui('erase');
