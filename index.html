@@ -526,7 +526,7 @@ let doodleOn=false;try{doodleOn=localStorage.getItem('moleskine:doodle')=='1'}ca
 const DCOL=['#111111','#1f4fd8','#d62828','#2a9d3f','#7b2cbf','#f77f00','#0a9396','#e5238c'];
 const DI={
 sun:['morning dia dias day sun sunny sunshine summer sol soleado verano','c50,50,15;p50,12 50,24;p50,76 50,88;p12,50 24,50;p76,50 88,50;p23,23 31,31;p69,69 77,77;p77,23 69,31;p31,69 23,77'],
-heart:['heart love corazon amor querer quiero amo','B50,86 22,58 16,36 30,24 44,28 50,40 56,28 70,24 84,36 78,58'],
+heart:['heart love corazon quieres quiere queremos amor querer quiero amo','B50,86 22,58 16,36 30,24 44,28 50,40 56,28 70,24 84,36 78,58'],
 house:['house home casa hogar','p18,48 50,18 82,48;p26,44 26,82 74,82 74,44;P42,82 42,60 58,60 58,82'],
 tree:['tree forest wood arbol bosque','B50,10 70,18 80,36 68,54 50,58 32,54 20,36 30,18;p46,58 46,90;p54,58 54,90'],
 flower:['flower flowers rose garden flor flores rosa jardin','c50,38,7;c50,18,10;c70,38,10;c50,58,10;c30,38,10;p50,66 50,92;b50,80 64,70 76,74 64,84 50,82'],
@@ -551,7 +551,7 @@ cake:['cake birthday party cumple cumpleanos tarta pastel fiesta','P20,50 20,84 
 gift:['gift present regalo','P18,44 82,44 82,84 18,84;P14,32 86,32 86,44 14,44;p50,32 50,84;b50,32 36,14 28,26 50,32;b50,32 64,14 72,26 50,32'],
 clock:['clock time hour reloj tiempo hora','c50,50,36;p50,50 50,26;p50,50 68,58'],
 money:['money pay cash dollar euro dinero pagar','c50,50,34;b64,36 50,29 38,40 50,50 62,60 52,72 36,64;p50,22 50,80'],
-idea:['idea ideas think pensar','B50,10 70,18 76,40 64,58 62,68 38,68 36,58 24,40 30,18;p40,77 60,77;p43,86 57,86;p50,0 50,5'],
+idea:['pienso piensa creer creo cree idea ideas think pensar','B50,10 70,18 76,40 64,58 62,68 38,68 36,58 24,40 30,18;p40,77 60,77;p43,86 57,86;p50,0 50,5'],
 smile:['happy smile glad feliz sonrisa contento alegre','c50,50,36;c38,42,3.5;c62,42,3.5;b30,58 42,72 58,72 70,58'],
 sad:['sorry perdon disculpa siento sad cry unhappy triste llorar','c50,50,36;c38,42,3.5;c62,42,3.5;b32,72 42,60 58,60 68,72'],
 camera:['camera photo picture camara foto fotografia','P12,34 88,34 88,80 12,80;p34,34 40,22 60,22 66,34;c50,57,14'],
@@ -599,12 +599,12 @@ wink:['wink joke guino broma','c50,50,36;c38,42,3.5;p56,42 68,42;b30,58 42,72 58
 cool:['cool awesome guay chulo','c50,50,36;P24,38 46,38 44,50 26,50;P54,38 76,38 74,50 56,50;p46,40 54,40;b34,64 44,70 58,70 66,62'],
 inlove:['crush adore enamorado enamorada','c50,50,36;B38,46 31,40 33,34 38,36 43,34 45,40;B62,46 55,40 57,34 62,36 67,34 69,40;b32,60 42,72 58,72 68,60'],
 scared:['worried scared afraid nervous miedo asustado nervioso','c50,50,36;p28,36 42,32;p72,36 58,32;c38,46,3;c62,46,3;b32,68 40,62 48,68 56,62 64,68'],
-thumbs:['good ok okay nice perfect vale bien perfecto','p14,48 34,48 34,84 14,84 14,48;b34,50 46,34 50,16 60,18 58,38 80,38 84,50 80,70 74,84 34,84'],
+thumbs:['bueno buena buenos buenas good ok okay nice perfect vale bien perfecto','p14,48 34,48 34,84 14,84 14,48;b34,50 46,34 50,16 60,18 58,38 80,38 84,50 80,70 74,84 34,84'],
 check:['yes si correcto check done hecho listo','p18,52 40,74 84,26'],
 cross:['no nope never nunca jamas','p20,20 80,80;p80,20 20,80'],
 question:['question pregunta duda doubt','b34,30 38,16 60,14 68,28 58,44 50,52 50,62;c50,80,3'],
 warning:['attention warning important atencion cuidado ojo importante alert aviso','P50,10 92,84 8,84;p50,34 50,60;c50,72,2.5'],
-hello:['hello hi hola hey saludos bye adios chao','o50,66,22,20;p34,56 30,24;p44,50 42,16;p56,50 58,16;p66,56 72,26;b30,66 16,62 14,52'],
+hello:['mano manos hand hands hello hi hola hey saludos bye adios chao','o50,66,22,20;p34,56 30,24;p44,50 42,16;p56,50 58,16;p66,56 72,26;b30,66 16,62 14,52'],
 thanks:['thanks thank gracias pray rezar','b50,90 40,60 40,30 50,12;b50,90 60,60 60,30 50,12'],
 trophy:['congratulations congrats celebrate felicidades enhorabuena celebrar win ganar trophy winner campeon trofeo','p28,18 72,18 68,50 50,62 32,50 28,18;p50,62 50,78;p36,86 64,86;b28,26 14,26 16,42 32,44;b72,26 86,26 84,42 68,44'],
 clover:['luck lucky clover suerte trebol','c38,38,13;c62,38,13;c38,62,13;c62,62,13;b50,56 52,76 60,90'],
@@ -622,7 +622,7 @@ scissors:['scissors cut hair tijeras cortar pelo peluqueria','c30,72,10;c70,72,1
 bell:['bell alarm reminder campana alarma recordatorio','B50,12 66,22 70,48 82,70 18,70 30,48 34,22;c50,82,6'],
 flag:['flag country bandera pais','p26,12 26,90;P26,14 80,14 68,30 80,46 26,46'],
 magnifier:['search find look buscar encontrar lupa','c42,42,26;p60,60 88,88'],
-calendar:['calendar date schedule appointment meeting calendario fecha cita reunion agenda','P14,24 86,24 86,86 14,86;p14,40 86,40;p32,14 32,30;p68,14 68,30;c30,54,2.5;c50,54,2.5;c70,54,2.5;c30,70,2.5;c50,70,2.5'],
+calendar:['ano anos year years calendar date schedule appointment meeting calendario fecha cita reunion agenda','P14,24 86,24 86,86 14,86;p14,40 86,40;p32,14 32,30;p68,14 68,30;c30,54,2.5;c50,54,2.5;c70,54,2.5;c30,70,2.5;c50,70,2.5'],
 bus:['bus train metro tren autobus','P14,16 86,16 86,76 14,76;p14,50 86,50;p30,16 30,50;p50,16 50,50;p70,16 70,50;c30,82,8;c70,82,8'],
 ship:['ship boat sail cruise barco crucero velero','P10,60 90,60 76,84 24,84;p50,60 50,14;P50,16 80,50 50,50'],
 hat:['hat cap sombrero gorra','a50,60,26,180,360;b8,64 50,76 92,64;p26,52 74,52'],
@@ -632,11 +632,31 @@ drum:['drum drums band bateria tambor','o50,34,36,12;p14,34 14,70;p86,34 86,70;b
 mic:['microphone mic karaoke concert microfono concierto singer cantante','o50,32,12,20;b32,38 36,60 50,66 64,60 68,38;p50,66 50,86;p36,88 64,88'],
 headphones:['headphones podcast listen auriculares cascos escuchar','a50,52,32,180,360;P14,50 26,50 26,72 14,72;P74,50 86,50 86,72 74,72'],
 violin:['violin orchestra orquesta classical','B50,34 62,30 66,46 58,54 68,66 62,86 38,86 32,66 42,54 34,46 38,30;p50,34 50,6;p76,10 86,88'],
-radio:['radio fm','P12,32 88,32 88,84 12,84;c34,58,14;p58,48 78,48;p58,58 78,58;p58,68 78,68;p70,32 84,10']};
-const DK={};for(const k in DI)DI[k][0].split(' ').forEach(w=>DK[w]=k);
+radio:['radio fm','P12,32 88,32 88,84 12,84;c34,58,14;p58,48 78,48;p58,58 78,58;p58,68 78,68;p70,32 84,10'],
+thing:['cosa cosas thing things objeto objetos algo','P20,36 56,36 56,78 20,78;p20,36 36,20 72,20 56,36;p56,78 72,62 72,20'],
+man:['hombre hombres man men senor chico','c50,22,12;p50,34 50,66;p50,66 36,90;p50,66 64,90;p50,42 28,58;p50,42 72,58'],
+woman:['mujer mujeres woman women senora chica','c50,22,12;P50,34 30,74 70,74;p42,74 42,90;p58,74 58,90;p38,46 24,62;p62,46 76,62'],
+child:['nino nina ninos ninas child children kid kids bebe baby','c50,30,18;p50,48 50,72;p50,72 40,90;p50,72 60,90;p50,56 34,66;p50,56 66,66;c44,28,1.5;c56,28,1.5'],
+life:['vida vivir vive viven life live alive','p50,90 50,50;b50,60 30,56 20,36 40,38 50,56;b50,50 70,44 82,24 62,26 50,48'],
+world:['mundo mundial world globe planet planeta tierra earth','c50,50,36;o50,50,14,36;p14,50 86,50;b20,30 50,36 80,30;b20,70 50,64 80,70'],
+moment:['momento momentos moment rato instante instant vez veces','P28,12 72,12 54,50 72,88 28,88 46,50;p44,76 56,76;p20,12 80,12;p20,88 80,88'],
+place:['lugar lugares sitio place spot where donde location ubicacion','B50,90 30,56 26,38 36,20 50,14 64,20 74,38 70,56;c50,38,10'],
+problem:['problema problemas problem issue error fallo bug lio','b20,56 40,24 66,34 74,60 50,76 28,62 38,40 60,46 56,62'],
+truth:['verdad verdades truth true real cierto verdadero honest honesto','p50,14 50,84;p30,86 70,86;p18,28 82,28;p18,28 8,52 28,52 18,28;p82,28 72,52 92,52 82,28'],
+big:['grande grandes big large huge enorme gigante','p20,80 80,20;p52,20 80,20 80,48;p48,80 20,80 20,52'],
+do:['','p45,34 45,90;P20,16 70,16 70,34 20,34'],
+have:['','b14,50 30,76 70,76 86,50;c50,44,14'],
+say:['','B16,22 84,22 84,60 56,60 40,80 42,60 16,60;p28,36 72,36;p28,48 60,48'],
+see:['','B10,50 30,34 50,30 70,34 90,50 70,66 50,70 30,66;c50,50,12;c50,50,4'],
+go:['','p10,50 82,50;p62,28 86,50 62,72'],
+know:['','P50,20 92,38 50,56 8,38;b28,48 28,66 50,76 72,66 72,48;p92,38 92,62']};
+const DK=Object.create(null),DKW=Object.create(null);for(const k in DI)DI[k][0].split(' ').filter(Boolean).forEach(w=>DK[w]=k);
+/* very common verbs: used only when a line has no more concrete word */
+const DWK={do:'hacer hago haces hace hacemos hacen hizo do does make makes',have:'tener tengo tienes tiene tenemos tienen have has',say:'decir digo dices dice dicen say says said tell hablar hablo habla hablamos hablan speak talk',see:'ver veo ves ve vemos ven see sees mirar miro mira watch',go:'ir voy vas va vamos van go goes going',know:'saber sabes sabe sabemos saben know knows',gift:'dar doy das da damos dan give gives',gym:'poder puedo puedes puede podemos pueden can could',person:'ser soy eres es somos son fue ser',place:'estar estoy estas esta estamos estan'};
+for(const k in DWK)DWK[k].split(' ').forEach(w=>{if(!DK[w])DKW[w]=k});
 const DGEN=['star','heart','smile','idea','cloud'];
 const dnorm=w=>w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zñ]/g,'');
-const dfind=w=>{w=dnorm(w);return DK[w]||DK[w.replace(/(es|s)$/,'')]||DK[w.replace(/s$/,'')]||null};
+const dfind=(w,M)=>{w=dnorm(w);return M[w]||M[w.replace(/(es|s)$/,'')]||M[w.replace(/s$/,'')]||null};
 const DR=(a,b)=>a+Math.random()*(b-a);
 function dbuild(key,ox,oy,sz,col){const k=sz/100,out=[],ph=DR(0,6),sc=DR(.94,1.06);
  const W=(x,y,i)=>{const w=Math.sin(ph+i*.13)*.9+Math.sin(ph*2+i*.31)*.5;return[ox+(x-50)*k*sc+50*k+w*k,oy+(y-50)*k*sc+50*k+Math.cos(ph+i*.11)*.8*k]};
@@ -651,7 +671,7 @@ function dbuild(key,ox,oy,sz,col){const k=sz/100,out=[],ph=DR(0,6),sc=DR(.94,1.0
 function dlineY(end){/* rect of the character just before offset `end`, relative to the canvas */
  const n=nodeAt(end-1),m=nodeAt(end);if(!n[0]||n[0].nodeType!=3)return null;const r=document.createRange();r.setStart(n[0],Math.max(0,n[1]));r.setEnd(m[0].nodeType==3?m[0]:n[0],m[0].nodeType==3?m[1]:n[0].data.length);
  const rc=[...r.getClientRects()].pop();if(!rc)return null;const c=cv.getBoundingClientRect();return{cy:rc.top-c.top+rc.height/2,right:rc.right-c.left}}
-function dword(txt){const w=txt.match(/[A-Za-zÀ-ÿñÑ]+/g)||[];for(let i=w.length-1;i>=0;i--){const k=dfind(w[i]);if(k)return{k,w:w[i]}}return{k:null,w:w[w.length-1]||''}}
+function dword(txt){const w=txt.match(/[A-Za-zÀ-ÿñÑ]+/g)||[];for(const M of[DK,DKW])for(let i=w.length-1;i>=0;i--){const k=dfind(w[i],M);if(k)return{k,w:w[i]}}return{k:null,w:w[w.length-1]||''}}
 function doodleAt(txt,lineEnd){const f=dword(txt);let k=f.k;if(!k)k=DGEN[Math.floor(Math.random()*DGEN.length)];
  const p=dlineY(lineEnd);if(!p)return;const sz=46,col=DCOL[Math.floor(Math.random()*DCOL.length)],w=paper.clientWidth;
  const x=w-sz-8;const y=p.cy-sz/2+DR(-2,2);
